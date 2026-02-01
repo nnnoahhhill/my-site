@@ -27,7 +27,12 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
     const initializeBodies = () => {
       // 1. Measure and Create Bodies
       const newBodies: PhysicsBody[] = [];
-      const { width: containerW, height: containerH } = container.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      
+      // On mobile, use window.innerHeight to get actual visible viewport (excluding browser UI)
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      const containerW = containerRect.width;
+      const containerH = isMobile ? window.innerHeight : containerRect.height;
 
       initialItems.forEach((def) => {
         const el = itemsRef.current.get(def.id);
@@ -118,7 +123,12 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
 
   const update = useCallback(() => {
     if (!containerRef.current) return;
-    const { width, height } = containerRef.current.getBoundingClientRect();
+    const containerRect = containerRef.current.getBoundingClientRect();
+    
+    // On mobile, use window.innerHeight to get actual visible viewport (excluding browser UI)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const width = containerRect.width;
+    const height = isMobile ? window.innerHeight : containerRect.height;
 
     // Run Physics - pass hovered items so they skip velocity updates but still collide
     const hoveredSet = hoveredItemsRef.current;
