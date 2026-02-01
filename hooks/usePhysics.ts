@@ -8,6 +8,7 @@ export type PhysicsItemDef = {
   // Optional initial overrides
   x?: number;
   y?: number;
+  speedMultiplier?: number; // Multiply initial speed (default 1.0)
 };
 
 export function usePhysics(initialItems: PhysicsItemDef[]) {
@@ -16,31 +17,59 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
   const itemsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const bodiesRef = useRef<PhysicsBody[]>([]);
   const frameRef = useRef<number>();
+  const hoveredItemsRef = useRef<Set<string>>(new Set());
 
   // Initialize bodies on mount/change
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
     
-    // 1. Measure and Create Bodies
-    const newBodies: PhysicsBody[] = [];
-    const { width: containerW, height: containerH } = container.getBoundingClientRect();
+    const initializeBodies = () => {
+      // 1. Measure and Create Bodies
+      const newBodies: PhysicsBody[] = [];
+      const { width: containerW, height: containerH } = container.getBoundingClientRect();
 
-    initialItems.forEach((def) => {
-      const el = itemsRef.current.get(def.id);
-      if (!el) return;
+      initialItems.forEach((def) => {
+        const el = itemsRef.current.get(def.id);
+        if (!el) return;
 
       const rect = el.getBoundingClientRect();
       const baseMass = 10;
       const mass = def.mass ?? (baseMass * (1 + def.label.length * 0.05));
 
-      // Random position if not set (rejection sampling could go here, but strict "no overlap" at start is complex)
-      // We'll just spread them out randomly for now.
-      const x = def.x ?? Math.random() * (containerW - rect.width);
-      const y = def.y ?? Math.random() * (containerH - rect.height);
+      // Rejection sampling to avoid overlaps
+      let x: number, y: number;
+      let attempts = 0;
+      const maxAttempts = 50;
+      
+      if (def.x !== undefined && def.y !== undefined) {
+        x = def.x;
+        y = def.y;
+      } else {
+        do {
+          x = Math.random() * (containerW - rect.width);
+          y = Math.random() * (containerH - rect.height);
+          attempts++;
+          
+          // Check overlap with existing bodies
+          const overlaps = newBodies.some(existing => {
+            return !(
+              x + rect.width < existing.x ||
+              x > existing.x + existing.width ||
+              y + rect.height < existing.y ||
+              y > existing.y + existing.height
+            );
+          });
+          
+          if (!overlaps || attempts >= maxAttempts) break;
+        } while (attempts < maxAttempts);
+      }
 
-      // Random velocity
-      const speed = 2; // base speed
+      // Random velocity - slower base speed with randomization
+      const baseSpeed = 0.3; // slower base speed
+      const speedVariation = 0.2; // random variation range (0.3 to 0.5)
+      const speedMultiplier = def.speedMultiplier ?? 1.0;
+      const speed = (baseSpeed + (Math.random() * speedVariation)) * speedMultiplier; // each item gets random speed
       const angle = Math.random() * Math.PI * 2;
       const vx = Math.cos(angle) * speed;
       const vy = Math.sin(angle) * speed;
@@ -57,16 +86,43 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
       });
     });
 
-    bodiesRef.current = newBodies;
-    setReady(true);
+      bodiesRef.current = newBodies;
+      
+      // Position all items immediately before showing them
+      newBodies.forEach((body) => {
+        const el = itemsRef.current.get(body.id);
+        if (el) {
+          el.style.transform = `translate3d(${body.x}px, ${body.y}px, 0)`;
+          el.style.opacity = '1'; // Make visible once positioned
+        }
+      });
+      
+      setReady(true);
+    };
+    
+    // Wait for next frame to ensure all elements are registered and measured
+    const initFrame = requestAnimationFrame(() => {
+      // Check if all items are registered
+      const allRegistered = initialItems.every(def => itemsRef.current.has(def.id));
+      if (!allRegistered) {
+        // If not all registered, try again next frame
+        requestAnimationFrame(initializeBodies);
+        return;
+      }
+      
+      initializeBodies();
+    });
+
+    return () => cancelAnimationFrame(initFrame);
   }, [initialItems]);
 
   const update = useCallback(() => {
     if (!containerRef.current) return;
     const { width, height } = containerRef.current.getBoundingClientRect();
 
-    // Run Physics
-    resolveCollisions(bodiesRef.current, { width, height });
+    // Run Physics - pass hovered items so they skip velocity updates but still collide
+    const hoveredSet = hoveredItemsRef.current;
+    resolveCollisions(bodiesRef.current, { width, height }, hoveredSet);
 
     // Update DOM
     bodiesRef.current.forEach((body) => {
@@ -97,5 +153,14 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
     }
   };
 
-  return { containerRef, registerRef, ready };
+  // Hover handlers
+  const setHovered = useCallback((id: string, isHovered: boolean) => {
+    if (isHovered) {
+      hoveredItemsRef.current.add(id);
+    } else {
+      hoveredItemsRef.current.delete(id);
+    }
+  }, []);
+
+  return { containerRef, registerRef, ready, setHovered };
 }

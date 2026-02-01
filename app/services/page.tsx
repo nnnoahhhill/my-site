@@ -6,14 +6,13 @@ import { useTheme, getRandomColor } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
 
 const ITEMS = [
-  { id: 'title', label: 'Services', mass: 40 },
-  { id: 'software', label: 'Software Consulting', mass: 20 },
-  { id: 'startups', label: 'Startup Advising', mass: 20 },
-  { id: 'artcar', label: 'Sick as Fuck Art Car — $20,000', mass: 50 },
-  { id: 'desc1', label: 'Playa ready', mass: 10 },
-  { id: 'desc2', label: 'Soundsystem for 8', mass: 15 },
-  { id: 'desc3', label: 'Transport & Training included', mass: 20 },
-  { id: 'desc4', label: 'I am on call for burn problems', mass: 20 },
+  { id: 'software', label: 'Software Stuff', href: '/services/software', mass: 20 },
+  { id: 'startups', label: 'Startup Stuff', href: '/services/startups', mass: 20 },
+  { id: 'creative', label: 'Creative Engineering', href: '/services/creative', mass: 25 },
+  { id: 'tech', label: 'Tech Consulting', href: '/services/tech', mass: 20 },
+  { id: 'general', label: 'General Consulting', href: '/services/general', mass: 20 },
+  { id: 'everything', label: 'Everything Else', href: '/services/everything', mass: 20 },
+  { id: 'artcar', label: 'cool as fuck art car', href: '/services/art-car', mass: 30 },
 ];
 
 export default function ServicesPage() {
@@ -25,7 +24,7 @@ export default function ServicesPage() {
     mass: item.mass, 
   })), []);
 
-  const { containerRef, registerRef } = usePhysics(physicsDefs);
+  const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
   const itemColors = useMemo(() => {
     if (!randomMode) return {};
@@ -43,8 +42,13 @@ export default function ServicesPage() {
           key={item.id}
           id={item.id}
           label={item.label}
+          href={(item as any).href}
           registerRef={registerRef(item.id)}
-          style={{ color: itemColors[item.id] }}
+          setHovered={setHovered}
+          style={{ 
+            color: itemColors[item.id],
+            fontSize: item.id === 'artcar' ? '2rem' : undefined
+          }}
         />
       ))}
     </main>

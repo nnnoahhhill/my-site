@@ -12,7 +12,15 @@ export type PhysicsBody = {
 
 export const RESOLUTION_STEPS = 1; // can increase for better stability if needed
 
-export function resolveCollisions(items: PhysicsBody[], bounds: { width: number; height: number }) {
+export function resolveCollisions(items: PhysicsBody[], bounds: { width: number; height: number }, hoveredIds?: Set<string>) {
+  // 0. Update positions based on velocity FIRST (skip hovered items)
+  for (const item of items) {
+    if (!hoveredIds || !hoveredIds.has(item.id)) {
+      item.x += item.vx;
+      item.y += item.vy;
+    }
+  }
+
   // 1. Wall Collisions
   for (const item of items) {
     if (item.x <= 0) {
@@ -73,13 +81,7 @@ function resolveElasticCollision(a: PhysicsBody, b: PhysicsBody) {
   const overlapX = (a.width / 2 + b.width / 2) - Math.abs(cxA - cxB);
   const overlapY = (a.height / 2 + b.height / 2) - Math.abs(cyA - cyB);
 
-  // We need a better separation logic for rectangles, but simple projection along the normal vector works for now
-  // A simple approximation: push them apart along the collision normal
-  // (A more robust AABB response would check the "minimum translation vector" but this might suffice for "chaotic")
-  
-  // Actually, for rectangles, determining the "normal" of collision is tricky without previous frame data.
-  // We'll stick to the center-to-center normal for momentum, but we need to push them out of overlap.
-  // Let's barely separate them.
+  // Simple separation - push them apart along the collision normal
   const totalMass = a.mass + b.mass;
   const mRatioA = b.mass / totalMass;
   const mRatioB = a.mass / totalMass;
@@ -92,7 +94,6 @@ function resolveElasticCollision(a: PhysicsBody, b: PhysicsBody) {
   // Move B
   b.x += ux * nudge * mRatioB;
   b.y += uy * nudge * mRatioB;
-
 
   // Relative velocity
   const va = a.vx * ux + a.vy * uy;

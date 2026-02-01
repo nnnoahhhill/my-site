@@ -6,8 +6,11 @@ import { useTheme, getRandomColor } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
 import { MoodPopup } from '@/components/MoodPopup';
 
+// Note: Metadata should be in a separate non-client file, but since this is client-only,
+// we'll handle it via layout or a wrapper. For now, metadata is in layout.tsx
+
 const ITEMS = [
-  { id: 'title', label: 'Noah Hill', mass: 40 }, 
+  { id: 'title', label: 'Noah Hill', mass: 300 }, 
   { id: 'about', label: 'About', href: '/about' },
   { id: 'contact', label: 'Contact', href: '/contact' },
   { id: 'projects', label: 'Projects', href: '/projects' },
@@ -16,9 +19,9 @@ const ITEMS = [
   { id: 'goods', label: 'Goods', href: '/goods' },
   { id: 'services', label: 'Services', href: '/services' },
   { id: 'cult', label: 'Cult', href: '/cult' },
-  { id: 'brighter', label: 'Brighter', action: 'brighter' },
-  { id: 'darker', label: 'Darker', action: 'darker' },
-  { id: 'random', label: 'Random', action: 'random' },
+  { id: 'brighter', label: 'light', action: 'brighter' },
+  { id: 'darker', label: 'dark', action: 'darker' },
+  { id: 'random', label: 'random', action: 'random' },
 ];
 
 export default function Home() {
@@ -31,7 +34,7 @@ export default function Home() {
     mass: item.mass, 
   })), []); // constant
 
-  const { containerRef, registerRef } = usePhysics(physicsDefs);
+  const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
   const handleAction = (action?: string) => {
     if (!action) return;
@@ -53,17 +56,30 @@ export default function Home() {
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      {ITEMS.map(item => (
-        <FloatingItem
-          key={item.id}
-          id={item.id}
-          label={item.label}
-          href={item.href}
-          registerRef={registerRef(item.id)}
-          onClick={() => handleAction(item.action)}
-                    style={{ color: itemColors[item.id] }} // Will be undefined (inherit) if not random
-                  />
-                ))}
+      {ITEMS.map(item => {
+        const isActionButton = item.action !== undefined;
+        const fontSize = item.id === 'title' 
+          ? '5.5rem'  // Very slightly larger
+          : isActionButton 
+            ? '1.8rem'  // Smaller for action buttons
+            : '4rem';  // Pretty larger for regular items
+        
+        return (
+          <FloatingItem
+            key={item.id}
+            id={item.id}
+            label={item.label}
+            href={item.href}
+            registerRef={registerRef(item.id)}
+            setHovered={setHovered}
+            onClick={() => handleAction(item.action)}
+            style={{ 
+              color: itemColors[item.id],
+              fontSize
+            }}
+          />
+        );
+      })}
                 <MoodPopup />
               </main>
             );

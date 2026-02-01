@@ -8,36 +8,32 @@ import type { Post } from '@/lib/posts';
 
 export default function WordsClient({ posts }: { posts: Post[] }) {
   const { randomMode, seed } = useTheme();
-  const [suggestion, setSuggestion] = useState({ email: '', idea: '' });
+  const [suggestion, setSuggestion] = useState({ idea: '' });
 
-  // Items: Title, Suggestion Form, Posts
-  // We need to generate IDs for posts
+  // Ensure posts is an array
+  const safePosts = Array.isArray(posts) ? posts : [];
   
-  const postItems = posts.map(post => ({
+  const postItems = safePosts.map(post => ({
     id: `post-${post.slug}`,
     label: post.title,
-    mass: 15,
-    href: `/words/${post.slug}`,
-    isFeatured: post.featured
+    mass: 20,
+    href: `/words/${encodeURIComponent(post.slug)}`,
   }));
 
   const staticItems = [
-    { id: 'title', label: 'Words', mass: 40 },
-    { id: 'suggest-label', label: 'Suggest a topic:', mass: 20 },
-    { id: 'suggest-email', mass: 15 },
-    { id: 'suggest-idea', mass: 25 },
-    { id: 'suggest-submit', mass: 10 },
+    { id: 'suggest-idea', mass: 25, label: '' },
+    { id: 'suggest-submit', mass: 10, label: '' },
   ];
   
-  const allItems = [...staticItems, ...postItems];
+  const allItems = [...postItems, ...staticItems];
 
   const physicsDefs = useMemo(() => allItems.map(item => ({
     id: item.id,
-    label: item.label || item.id,
+    label: (item as any).label || item.id,
     mass: item.mass
   })), [allItems]);
 
-  const { containerRef, registerRef } = usePhysics(physicsDefs);
+  const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
   
   const itemColors = useMemo(() => {
     if (!randomMode) return {};
@@ -48,9 +44,30 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
     return colors;
   }, [randomMode, seed, allItems]);
 
-  const handleSuggest = () => {
-    alert('Suggestion logged (conceptually)');
-    setSuggestion({ email: '', idea: '' });
+  const handleItemClick = (item: any) => {
+    if (item.href) {
+      window.location.href = item.href;
+    }
+  };
+
+  const isValid = suggestion.idea.trim().length > 0;
+
+  const handleSuggest = async () => {
+    if (!isValid) return;
+    try {
+      await fetch('/api/mood', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          mood: 'suggestion', 
+          text: suggestion.idea,
+          timestamp: Date.now() 
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to submit suggestion:', e);
+    }
+    setSuggestion({ idea: '' });
   };
 
   return (
@@ -60,36 +77,50 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
         const style = { color: itemColors[item.id] };
         
         // Handle Form Inputs
-        if (item.id === 'suggest-email') {
-             content = <input 
-               placeholder="Your Email" 
-               value={suggestion.email} 
-               onChange={e => setSuggestion({...suggestion, email: e.target.value})}
-               style={{ background: 'transparent', border: '1px solid currentColor', color: 'inherit', padding: '0.5rem' }}
-             />
-        } else if (item.id === 'suggest-idea') {
+        if (item.id === 'suggest-idea') {
              content = <textarea 
                placeholder="What should I write about?" 
                value={suggestion.idea} 
                onChange={e => setSuggestion({...suggestion, idea: e.target.value})}
-               style={{ background: 'transparent', border: '1px solid currentColor', color: 'inherit', padding: '0.5rem', width: '200px', height: '100px' }}
+               style={{ 
+                 background: 'transparent', 
+                 border: '3px solid #fff', 
+                 color: '#fff', 
+                 padding: '0.5rem', 
+                 width: '400px', 
+                 maxWidth: '90vw',
+                 height: '150px',
+                 fontSize: '1rem',
+                 fontFamily: 'inherit'
+               }}
              />
         } else if (item.id === 'suggest-submit') {
-             content = <button onClick={handleSuggest} style={{ background: 'transparent', border: '1px solid currentColor', color: 'inherit', padding: '0.5rem' }}>Submit</button>
+             content = <button 
+               onClick={handleSuggest} 
+               disabled={!isValid}
+               style={{ 
+                 background: 'transparent', 
+                 border: '3px solid #fff', 
+                 color: '#fff', 
+                 padding: '0.5rem',
+                 cursor: isValid ? 'pointer' : 'not-allowed',
+                 opacity: isValid ? 1 : 0.5,
+                 fontWeight: 'bold'
+               }}
+             >
+               Send
+             </button>
         }
 
         return (
           <FloatingItem
             key={item.id}
             id={item.id}
-            label={item.label}
-            href={item.href} // For posts
+            label={(item as any).label || item.id}
+            href={(item as any).href}
             registerRef={registerRef(item.id)}
-            style={{ 
-               ...style, 
-               fontWeight: (item as any).isFeatured ? 'bold' : 'normal',
-               textDecoration: (item as any).isFeatured ? 'underline' : 'none'
-            }}
+            setHovered={setHovered}
+            style={style}
           >
             {content}
           </FloatingItem>

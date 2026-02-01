@@ -6,10 +6,9 @@ import { useTheme, getRandomColor } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
 
 const ITEMS = [
-  { id: 'title', label: 'Goods', mass: 40 },
-  { id: 'item1', label: 'T-Shirt ($30)', mass: 20, href: '#' },
-  { id: 'item2', label: 'Sticker Pack ($10)', mass: 15, href: '#' },
-  { id: 'item3', label: 'Print ($50)', mass: 25, href: '#' },
+  { id: 'item1', label: 'Premium LED FootGloves™ (white)', mass: 30, href: '/goods/footgloving' },
+  { id: 'item1b', label: 'Premium LED FootGloves™ (black)', mass: 30, href: '/goods/footgloving' },
+  { id: 'item2', label: 'super cool art car build', mass: 25, href: '/services/art-car' },
 ];
 
 export default function GoodsPage() {
@@ -21,7 +20,7 @@ export default function GoodsPage() {
     mass: item.mass, 
   })), []);
 
-  const { containerRef, registerRef } = usePhysics(physicsDefs);
+  const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
   const itemColors = useMemo(() => {
     if (!randomMode) return {};
@@ -41,7 +40,11 @@ export default function GoodsPage() {
           label={item.label}
           href={item.href}
           registerRef={registerRef(item.id)}
-          style={{ color: itemColors[item.id] }}
+          setHovered={setHovered}
+          style={{ 
+            color: itemColors[item.id],
+            fontSize: item.id === 'item2' ? '1.5rem' : undefined // Even smaller
+          }}
         />
       ))}
     </main>

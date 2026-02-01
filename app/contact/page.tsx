@@ -6,7 +6,8 @@ import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme, getRandomColor } from '@/components/ThemeProvider';
 
 const ITEMS = [
-  { id: 'title', label: 'Contact', mass: 50 },
+  { id: 'blurb1', label: 'message me here to get in touch', mass: 15 },
+  { id: 'blurb2', label: 'response time varies but usually asap', mass: 15 },
   { id: 'name', mass: 20 },
   { id: 'email', mass: 20 },
   { id: 'subject', mass: 20 },
@@ -37,7 +38,7 @@ export default function ContactPage() {
     mass: item.mass
   })), []);
 
-  const { containerRef, registerRef } = usePhysics(physicsDefs);
+  const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
   const itemColors = useMemo(() => {
     if (!randomMode) return {};
@@ -51,23 +52,32 @@ export default function ContactPage() {
   const handleSubmit = async () => {
     if (!isValid || submitting) return;
     setSubmitting(true);
-    console.log('Submitting', formData);
-    // Log only as requested
-    // await fetch('/api/contact', ...)
-    setTimeout(() => {
-        setSubmitting(false);
-        alert('Logged (conceptually)');
-    }, 1000);
+    
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      alert('Message sent!');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (e) {
+      console.error('Failed to submit:', e);
+      alert('Failed to send message');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputStyle = {
     background: 'transparent',
-    border: '1px solid currentColor',
-    color: 'inherit',
+    border: '3px solid #fff',
+    color: '#fff',
     padding: '0.5rem',
     fontFamily: 'inherit',
     fontSize: '1rem',
     pointerEvents: 'auto' as const, // Ensure inputs are clickable
+    width: '300px',
   };
 
   return (
@@ -77,8 +87,8 @@ export default function ContactPage() {
         const style = { color };
 
         let content;
-        if (item.id === 'title') {
-          content = <h1 style={{ margin: 0, fontSize: '2rem' }}>Contact</h1>;
+        if (item.id === 'blurb1' || item.id === 'blurb2') {
+          content = <span style={{ fontSize: '1.4rem' }}>{item.label}</span>;
         } else if (item.id === 'name') {
           content = <input 
             type="text" 
@@ -106,7 +116,7 @@ export default function ContactPage() {
         } else if (item.id === 'message') {
           content = <textarea 
             placeholder="Message" 
-            style={{ ...inputStyle, width: '300px', height: '150px', resize: 'none' }}
+            style={{ ...inputStyle, width: '400px', height: '200px', resize: 'none' }}
             value={formData.message}
             onChange={e => setFormData({...formData, message: e.target.value})}
           />;
@@ -130,6 +140,7 @@ export default function ContactPage() {
             key={item.id}
             id={item.id}
             registerRef={registerRef(item.id)}
+            setHovered={setHovered}
             style={style}
           >
             {content}
