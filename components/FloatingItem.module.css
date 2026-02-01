@@ -1,0 +1,24 @@
+.item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  /* Touch action manipulation to allow tap but prevent browser zoom/scroll weirdness on the item */
+  touch-action: none;
+  will-change: transform;
+}
+
+.item:hover {
+  text-decoration: underline;
+}
+
+.item a {
+  text-decoration: none;
+  color: inherit;
+}
