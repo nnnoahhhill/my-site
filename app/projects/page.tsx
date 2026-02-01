@@ -40,7 +40,7 @@ export default function ProjectsPage() {
   }, [randomMode, seed]);
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       {ITEMS.map(item => {
         const isBlurb = item.id === 'blurb1' || item.id === 'blurb2';
         return (
@@ -53,7 +53,7 @@ export default function ProjectsPage() {
             setHovered={setHovered}
             style={{ 
               color: itemColors[item.id],
-              fontSize: isBlurb ? '1.4rem' : '2.8rem'
+              fontSize: isBlurb ? 'clamp(0.9rem, 3vw, 1.4rem)' : 'clamp(1.2rem, 5vw, 2.8rem)'
             }}
           />
         );

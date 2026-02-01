@@ -130,7 +130,7 @@ export function MoodPopup() {
         transform: 'translate(-50%, -50%)',
         background: 'var(--bg-color)',
         border: '2px solid currentColor',
-        padding: '3rem',
+        padding: 'clamp(1.5rem, 4vw, 3rem)',
         zIndex: 9999,
         width: '600px',
         maxWidth: '90vw',
@@ -138,30 +138,30 @@ export function MoodPopup() {
       }}>
         {stage === 'select' && (
           <>
-            <p style={{ margin: '0 0 2rem 0', fontSize: '1.5rem' }}>how are you feeling?</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center', gap: '3rem', padding: '0 2rem' }}>
+            <p style={{ margin: '0 0 2rem 0', fontSize: 'clamp(1rem, 3vw, 1.5rem)' }}>how are you feeling?</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center', gap: 'clamp(1rem, 4vw, 3rem)', padding: '0 clamp(0.5rem, 2vw, 2rem)' }}>
               <button 
                 onClick={() => handleMood('sad')} 
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}
               >
-                <img src="/sad.png" alt="sad" style={{ height: '80px', width: 'auto' }} />
+                <img src="/sad.png" alt="sad" style={{ height: 'clamp(40px, 10vw, 80px)', width: 'auto', maxWidth: '100%' }} />
               </button>
               <button 
                 onClick={() => handleMood('neutral')} 
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}
               >
-                <img src="/flat.png" alt="neutral" style={{ height: '80px', width: 'auto' }} />
+                <img src="/flat.png" alt="neutral" style={{ height: 'clamp(40px, 10vw, 80px)', width: 'auto', maxWidth: '100%' }} />
               </button>
               <button 
                 onClick={() => handleMood('happy')} 
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}
               >
-                <img src="/happy.png" alt="happy" style={{ height: '80px', width: 'auto' }} />
+                <img src="/happy.png" alt="happy" style={{ height: 'clamp(40px, 10vw, 80px)', width: 'auto', maxWidth: '100%' }} />
               </button>
             </div>
             <button 
               onClick={() => handleMood('obscure')}
-              style={{ fontSize: '1rem', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', color: 'inherit', opacity: 0.7 }}
+              style={{ fontSize: 'clamp(0.7rem, 2vw, 1rem)', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', color: 'inherit', opacity: 0.7 }}
             >
               im feeling an obscure fourth thing
             </button>
@@ -170,20 +170,20 @@ export function MoodPopup() {
 
         {stage === 'input' && (
           <>
-            <p style={{ margin: '0 0 1rem 0', fontSize: '1.5rem' }}>okay how come?</p>
+            <p style={{ margin: '0 0 1rem 0', fontSize: 'clamp(1rem, 3vw, 1.5rem)' }}>okay how come?</p>
             <input 
               type="text" 
               value={obscureText}
               onChange={e => setObscureText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmitObscure()}
               autoFocus
-              style={{ width: '100%', padding: '1rem', background: 'transparent', border: '2px solid currentColor', color: 'inherit', fontSize: '1.2rem' }}
+              style={{ width: '100%', padding: '1rem', background: 'transparent', border: '2px solid currentColor', color: 'inherit', fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}
             />
           </>
         )}
 
         {stage === 'done' && (
-          <p style={{ fontSize: '1.5rem' }}>recorded.</p>
+          <p style={{ fontSize: 'clamp(1rem, 3vw, 1.5rem)' }}>recorded.</p>
         )}
       </div>
     </>

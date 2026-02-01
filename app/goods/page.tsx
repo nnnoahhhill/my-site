@@ -32,7 +32,7 @@ export default function GoodsPage() {
   }, [randomMode, seed]);
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       {ITEMS.map(item => (
         <FloatingItem
           key={item.id}
@@ -43,7 +43,12 @@ export default function GoodsPage() {
           setHovered={setHovered}
           style={{ 
             color: itemColors[item.id],
-            fontSize: item.id === 'item2' ? '1.5rem' : undefined // Even smaller
+            fontSize: item.id === 'item2' 
+              ? 'clamp(0.8rem, 2.5vw, 1.5rem)' 
+              : 'clamp(0.9rem, 3vw, 2rem)',
+            whiteSpace: 'normal',
+            maxWidth: 'clamp(200px, 80vw, 600px)',
+            wordWrap: 'break-word'
           }}
         />
       ))}

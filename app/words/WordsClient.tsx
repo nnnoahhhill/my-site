@@ -75,7 +75,7 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
   };
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       <style>{`
         textarea::placeholder {
           color: ${textColor};
@@ -95,13 +95,13 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
                  onChange={e => setSuggestion({...suggestion, idea: e.target.value})}
                  style={{ 
                    background: 'transparent', 
-                   border: `3px solid ${borderColor}`, 
+                   border: `3px solid #000`, 
                    color: textColor, 
                    padding: '0.5rem', 
-                   width: '400px', 
+                   width: 'clamp(200px, 70vw, 400px)', 
                    maxWidth: '90vw',
-                   height: '150px',
-                   fontSize: '1rem',
+                   height: 'clamp(80px, 25vh, 150px)',
+                   fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
                    fontFamily: 'inherit'
                  }}
                />
@@ -112,12 +112,13 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
                disabled={!isValid}
                style={{ 
                  background: 'transparent', 
-                 border: `3px solid ${borderColor}`, 
+                 border: `3px solid #000`, 
                  color: textColor, 
                  padding: '0.5rem',
                  cursor: isValid ? 'pointer' : 'not-allowed',
                  opacity: isValid ? 1 : 0.5,
-                 fontWeight: 'bold'
+                 fontWeight: 'bold',
+                 fontSize: 'clamp(0.8rem, 2.5vw, 1rem)'
                }}
              >
                Send

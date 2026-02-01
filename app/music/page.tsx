@@ -37,11 +37,11 @@ export default function MusicPage() {
   }, [randomMode, seed]);
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       {ITEMS.map(item => {
         let content;
         if ((item as any).embed === 'soundcloud') {
-          // SoundCloud embed - short but wide
+          // SoundCloud embed - short but wide, smaller square on mobile
           content = (
             <iframe
               width="450"
@@ -50,15 +50,26 @@ export default function MusicPage() {
               frameBorder="no"
               allow="autoplay"
               src={`https://w.soundcloud.com/player/?url=${encodeURIComponent((item as any).url)}&color=%23203235&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`}
-              style={{ border: 'none' }}
+              style={{ 
+                border: 'none',
+                width: 'clamp(120px, 30vw, 450px)',
+                height: 'clamp(120px, 30vw, 133px)',
+                maxWidth: '100%'
+              }}
             />
           );
         } else if ((item as any).embed === 'spotify') {
-          // Spotify embed - thin and wide, smaller
+          // Spotify embed - thin and wide, smaller square on mobile
           content = (
             <iframe
               data-testid="embed-iframe"
-              style={{ borderRadius: '2px', border: 'none' }}
+              style={{ 
+                borderRadius: '2px', 
+                border: 'none',
+                width: 'clamp(120px, 30vw, 450px)',
+                height: 'clamp(120px, 30vw, 181px)',
+                maxWidth: '100%'
+              }}
               src={(item as any).url}
               width="450"
               height="181"

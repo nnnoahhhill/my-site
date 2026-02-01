@@ -14,6 +14,14 @@
   will-change: transform;
 }
 
+@media (max-width: 768px) {
+  .item {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
 .item:hover {
   text-decoration: underline;
 }

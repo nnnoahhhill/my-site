@@ -21,21 +21,21 @@ export function resolveCollisions(items: PhysicsBody[], bounds: { width: number;
     }
   }
 
-  // 1. Wall Collisions
+  // 1. Wall Collisions - ensure items never go off screen
   for (const item of items) {
-    if (item.x <= 0) {
+    if (item.x < 0) {
       item.x = 0;
       item.vx *= -1;
-    } else if (item.x + item.width >= bounds.width) {
-      item.x = bounds.width - item.width;
+    } else if (item.x + item.width > bounds.width) {
+      item.x = Math.max(0, bounds.width - item.width);
       item.vx *= -1;
     }
 
-    if (item.y <= 0) {
+    if (item.y < 0) {
       item.y = 0;
       item.vy *= -1;
-    } else if (item.y + item.height >= bounds.height) {
-      item.y = bounds.height - item.height;
+    } else if (item.y + item.height > bounds.height) {
+      item.y = Math.max(0, bounds.height - item.height);
       item.vy *= -1;
     }
   }

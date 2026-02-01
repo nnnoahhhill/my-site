@@ -75,19 +75,19 @@ export default function ContactPage() {
 
   const getInputStyle = () => ({
     background: 'transparent',
-    border: `3px solid ${borderColor}`,
+    border: `3px solid #000`,
     color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
-    fontSize: '1rem',
+    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const, // Ensure inputs are clickable
-    width: '300px',
+    width: 'clamp(200px, 70vw, 300px)',
   });
   
   const inputStyle = getInputStyle();
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       <style>{`
         input::placeholder,
         textarea::placeholder {
@@ -101,7 +101,7 @@ export default function ContactPage() {
 
         let content;
         if (item.id === 'blurb1' || item.id === 'blurb2') {
-          content = <span style={{ fontSize: '1.4rem' }}>{item.label}</span>;
+          content = <span style={{ fontSize: 'clamp(0.9rem, 3vw, 1.4rem)' }}>{item.label}</span>;
         } else if (item.id === 'name') {
           content = <input 
             type="text" 
@@ -129,7 +129,7 @@ export default function ContactPage() {
         } else if (item.id === 'message') {
           content = <textarea 
             placeholder="Message" 
-            style={{ ...inputStyle, width: '400px', height: '200px', resize: 'none' }}
+            style={{ ...inputStyle, width: 'clamp(200px, 70vw, 400px)', height: 'clamp(100px, 30vh, 200px)', resize: 'none' }}
             value={formData.message}
             onChange={e => setFormData({...formData, message: e.target.value})}
           />;

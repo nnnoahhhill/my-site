@@ -55,14 +55,14 @@ export default function Home() {
   }, [randomMode, seed]);
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       {ITEMS.map(item => {
         const isActionButton = item.action !== undefined;
         const fontSize = item.id === 'title' 
-          ? '5.5rem'  // Very slightly larger
+          ? 'clamp(2.5rem, 8vw, 5.5rem)'  // Smaller on mobile
           : isActionButton 
-            ? '1.8rem'  // Smaller for action buttons
-            : '4rem';  // Pretty larger for regular items
+            ? 'clamp(0.9rem, 2.5vw, 1.8rem)'  // Even smaller on mobile
+            : 'clamp(1.8rem, 6vw, 4rem)';  // Smaller on mobile
         
         return (
           <FloatingItem

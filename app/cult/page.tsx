@@ -95,27 +95,27 @@ export default function CultPage() {
 
   const inputStyle = useMemo(() => ({
     background: 'transparent',
-    border: `3px solid ${borderColor}`,
+    border: `3px solid #000`,
     color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
-    fontSize: '1rem',
+    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const,
-    width: '300px',
-  }), [borderColor, textColor]);
+    width: 'clamp(200px, 70vw, 300px)',
+  }), [textColor]);
 
   const emailInputStyle = useMemo(() => ({
     ...inputStyle,
-    width: '400px',
+    width: 'clamp(200px, 70vw, 400px)',
   }), [inputStyle]);
 
   const joinButtonStyle = useMemo(() => ({
     ...inputStyle,
-    width: '150px',
+    width: 'clamp(100px, 40vw, 150px)',
   }), [inputStyle]);
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       <style>{`
         input::placeholder {
           color: ${textColor};
@@ -125,9 +125,9 @@ export default function CultPage() {
        {items.map(item => {
           let content;
           if (item.id === 'blurb1' || item.id === 'blurb2') {
-            content = <span style={{ fontSize: '1.2rem' }}>{item.label}</span>;
+            content = <span style={{ fontSize: 'clamp(0.8rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
           } else if (item.id === 'blurb3') {
-            content = <span style={{ fontSize: '0.7rem' }}>{item.label}</span>;
+            content = <span style={{ fontSize: 'clamp(0.6rem, 1.8vw, 0.7rem)' }}>{item.label}</span>;
           } else if (item.id === 'name') {
              content = <input 
                type="text"

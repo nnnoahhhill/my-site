@@ -10,6 +10,7 @@ const ITEMS = [
   { id: 'desc2', label: 'get in touch if you want a pair', mass: 30, href: '/contact' },
   { id: 'desc3', label: 'handmade to order', mass: 15, small: true },
   { id: 'img1', label: 'image', mass: 40, isImage: true, src: '/footglove-big.png' },
+  { id: 'img2', label: 'image2', mass: 40, isImage: true, src: '/footgloves-slay.png' },
 ];
 
 export default function FootGlovingPage() {
@@ -33,7 +34,7 @@ export default function FootGlovingPage() {
   }, [randomMode, seed]);
 
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       {ITEMS.map(item => {
         const isImage = (item as any).isImage;
         const imageSrc = (item as any).src;
@@ -57,9 +58,10 @@ export default function FootGlovingPage() {
                 src={imageSrc} 
                 alt={item.label || 'FootGloves'} 
                 style={{ 
-                  maxWidth: '400px', 
+                  maxWidth: 'clamp(200px, 80vw, 400px)', 
                   height: 'auto',
-                  display: 'block'
+                  display: 'block',
+                  width: 'auto'
                 }} 
               />
             ) : null}
