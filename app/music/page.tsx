@@ -6,14 +6,14 @@ import { useTheme, getRandomColor } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
 
 const ITEMS = [
-  { id: 'sc1', label: 'goldieflies', mass: 20, embed: 'soundcloud', url: 'https://soundcloud.com/noah-hill-600496670/goldieflies' },
-  { id: 'sc2', label: 'turn my dnb on', mass: 20, embed: 'soundcloud', url: 'https://soundcloud.com/noah-hill-600496670/turn-my-dnb-on' },
+  { id: 'sc1', label: 'goldieflies', mass: 23, embed: 'soundcloud', url: 'https://soundcloud.com/noah-hill-600496670/goldieflies' },
+  { id: 'sc2', label: 'turn my dnb on', mass: 17, embed: 'soundcloud', url: 'https://soundcloud.com/noah-hill-600496670/turn-my-dnb-on' },
   { id: 'sc3', label: 'roxanne', mass: 20, embed: 'soundcloud', url: 'https://soundcloud.com/noah-hill-600496670/roxanne' },
   { id: 'sc4', label: 'crank dat north of richmond', mass: 25, embed: 'soundcloud', url: 'https://soundcloud.com/noah-hill-600496670/crank-dat-north-of-richmond' },
-  { id: 'sp1', label: 'spotify1', mass: 30, embed: 'spotify', url: 'https://open.spotify.com/embed/track/5gglGRK7H9uK1BTg9VQEln?utm_source=generator' },
-  { id: 'sp2', label: 'spotify2', mass: 30, embed: 'spotify', url: 'https://open.spotify.com/embed/track/2CHeNYF9T1kMrgAr9giAF5?utm_source=generator' },
+  { id: 'sp1', label: 'spotify1', mass: 15, embed: 'spotify', url: 'https://open.spotify.com/embed/track/5gglGRK7H9uK1BTg9VQEln?utm_source=generator' },
+  { id: 'sp2', label: 'spotify2', mass: 25, embed: 'spotify', url: 'https://open.spotify.com/embed/track/2CHeNYF9T1kMrgAr9giAF5?utm_source=generator' },
   { id: 'sp3', label: 'spotify3', mass: 30, embed: 'spotify', url: 'https://open.spotify.com/embed/track/5Hd13VQQ0sOfCXDgE7KQ6J?utm_source=generator' },
-  { id: 'sp4', label: 'spotify4', mass: 30, embed: 'spotify', url: 'https://open.spotify.com/embed/track/4DK0nCa5jlCYcoUrNNNCuX?utm_source=generator' },
+  { id: 'sp4', label: 'spotify4', mass: 25, embed: 'spotify', url: 'https://open.spotify.com/embed/track/4DK0nCa5jlCYcoUrNNNCuX?utm_source=generator' },
 ];
 
 export default function MusicPage() {
@@ -61,7 +61,7 @@ export default function MusicPage() {
               style={{ borderRadius: '2px', border: 'none' }}
               src={(item as any).url}
               width="450"
-              height="175"
+              height="181"
               frameBorder="0"
               allowFullScreen
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
