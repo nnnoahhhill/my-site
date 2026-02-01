@@ -39,7 +39,7 @@ export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered
       
       // Get computed style to match actual rendering
       const computedStyle = window.getComputedStyle(itemRef.current);
-      const fontSize = computedStyle.fontSize || style?.fontSize || '3rem';
+      const fontSize = computedStyle.fontSize || (style?.fontSize ? String(style.fontSize) : '3rem');
       const fontFamily = computedStyle.fontFamily || 'inherit';
       const fontWeight = computedStyle.fontWeight || 'bold';
       
