@@ -57,8 +57,11 @@ export default function CultPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'black' 
       }}>
-         {/* Placeholder for GIF */}
-         <h1 style={{ color: 'white' }}>*DAB ME UP GIF PLAYING*</h1>
+         <img 
+           src="https://media.tenor.com/zyzx_DAbmeUp.gif" 
+           alt="Dab me up" 
+           style={{ maxWidth: '100%', maxHeight: '100%' }}
+         />
       </div>
     );
   }
