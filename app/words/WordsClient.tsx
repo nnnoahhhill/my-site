@@ -7,8 +7,12 @@ import { useTheme, getRandomColor } from '@/components/ThemeProvider';
 import type { Post } from '@/lib/posts';
 
 export default function WordsClient({ posts }: { posts: Post[] }) {
-  const { randomMode, seed } = useTheme();
+  const { randomMode, seed, brightness } = useTheme();
   const [suggestion, setSuggestion] = useState({ idea: '' });
+  
+  // Theme-aware border color: dark in light mode, white in dark mode
+  const borderColor = brightness > 0 ? '#000' : '#fff';
+  const textColor = brightness > 0 ? '#000' : '#fff';
 
   // Ensure posts is an array
   const safePosts = Array.isArray(posts) ? posts : [];
@@ -78,30 +82,40 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
         
         // Handle Form Inputs
         if (item.id === 'suggest-idea') {
-             content = <textarea 
-               placeholder="What should I write about?" 
-               value={suggestion.idea} 
-               onChange={e => setSuggestion({...suggestion, idea: e.target.value})}
-               style={{ 
-                 background: 'transparent', 
-                 border: '3px solid #fff', 
-                 color: '#fff', 
-                 padding: '0.5rem', 
-                 width: '400px', 
-                 maxWidth: '90vw',
-                 height: '150px',
-                 fontSize: '1rem',
-                 fontFamily: 'inherit'
-               }}
-             />
+             content = (
+               <>
+                 <style>{`
+                   textarea::placeholder {
+                     color: ${textColor};
+                     opacity: 0.6;
+                   }
+                 `}</style>
+                 <textarea 
+                   placeholder="What should I write about?" 
+                   value={suggestion.idea} 
+                   onChange={e => setSuggestion({...suggestion, idea: e.target.value})}
+                   style={{ 
+                     background: 'transparent', 
+                     border: `3px solid ${borderColor}`, 
+                     color: textColor, 
+                     padding: '0.5rem', 
+                     width: '400px', 
+                     maxWidth: '90vw',
+                     height: '150px',
+                     fontSize: '1rem',
+                     fontFamily: 'inherit'
+                   }}
+                 />
+               </>
+             );
         } else if (item.id === 'suggest-submit') {
              content = <button 
                onClick={handleSuggest} 
                disabled={!isValid}
                style={{ 
                  background: 'transparent', 
-                 border: '3px solid #fff', 
-                 color: '#fff', 
+                 border: `3px solid ${borderColor}`, 
+                 color: textColor, 
                  padding: '0.5rem',
                  cursor: isValid ? 'pointer' : 'not-allowed',
                  opacity: isValid ? 1 : 0.5,

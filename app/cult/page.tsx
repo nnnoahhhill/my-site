@@ -21,9 +21,14 @@ const ITEMS_DONE = [
 ];
 
 export default function CultPage() {
+  const { brightness } = useTheme();
   const [stage, setStage] = useState<'input' | 'gif' | 'fade' | 'done'>('input');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  
+  // Theme-aware border color: dark in light mode, white in dark mode
+  const borderColor = brightness > 0 ? '#000' : '#fff';
+  const textColor = brightness > 0 ? '#000' : '#fff';
   
   // We switch items based on stage
   const items = stage === 'input' ? ITEMS_INPUT : (stage === 'done' ? ITEMS_DONE : []);
@@ -90,8 +95,8 @@ export default function CultPage() {
 
   const inputStyle = {
     background: 'transparent',
-    border: '3px solid #fff',
-    color: '#fff',
+    border: `3px solid ${borderColor}`,
+    color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
     fontSize: '1rem',
@@ -111,6 +116,12 @@ export default function CultPage() {
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <style>{`
+        input::placeholder {
+          color: ${textColor};
+          opacity: 0.6;
+        }
+      `}</style>
        {items.map(item => {
           let content;
           if (item.id === 'blurb1' || item.id === 'blurb2') {

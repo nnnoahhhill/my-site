@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv';
 import { NextRequest, NextResponse } from 'next/server';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,6 +29,34 @@ export async function POST(req: NextRequest) {
     } else {
       console.log('Contact submission (KV not configured):', entry);
     }
+
+    // Send notification email to your personal email
+    const personalEmail = process.env.PERSONAL_EMAIL || 'your-email@example.com';
+    await sendEmail({
+      to: personalEmail,
+      subject: `Contact Form: ${subject}`,
+      html: `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>From:</strong> ${name} (${email})</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
+        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+      `,
+    });
+
+    // Send confirmation email to the sender
+    await sendEmail({
+      to: email,
+      subject: 'Message received!',
+      html: `
+        <h2>Thanks for reaching out!</h2>
+        <p>Hey ${name},</p>
+        <p>I got your message about "${subject}". I'll get back to you as soon as I can.</p>
+        <p>Best,</p>
+        <p>Noah</p>
+      `,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -16,7 +16,7 @@ const ITEMS = [
 ];
 
 export default function ContactPage() {
-  const { randomMode, seed } = useTheme();
+  const { randomMode, seed, brightness } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,6 +24,10 @@ export default function ContactPage() {
     message: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  
+  // Theme-aware border color: dark in light mode, white in dark mode
+  const borderColor = brightness > 0 ? '#000' : '#fff';
+  const textColor = brightness > 0 ? '#000' : '#fff';
 
   // Validation
   const isValid = 
@@ -69,19 +73,28 @@ export default function ContactPage() {
     }
   };
 
-  const inputStyle = {
+  const getInputStyle = () => ({
     background: 'transparent',
-    border: '3px solid #fff',
-    color: '#fff',
+    border: `3px solid ${borderColor}`,
+    color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
     fontSize: '1rem',
     pointerEvents: 'auto' as const, // Ensure inputs are clickable
     width: '300px',
-  };
+  });
+  
+  const inputStyle = getInputStyle();
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <style>{`
+        input::placeholder,
+        textarea::placeholder {
+          color: ${textColor};
+          opacity: 0.6;
+        }
+      `}</style>
       {ITEMS.map(item => {
         const color = itemColors[item.id];
         const style = { color };
