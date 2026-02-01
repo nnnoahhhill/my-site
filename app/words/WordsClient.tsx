@@ -43,7 +43,7 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
     if (!randomMode) return {};
     const colors: Record<string, string> = {};
     allItems.forEach(item => {
-      colors[item.id] = getRandomColor();
+      colors[item.id] = getRandomColor(seed, item.id);
     });
     return colors;
   }, [randomMode, seed, allItems]);

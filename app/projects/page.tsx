@@ -31,10 +31,10 @@ export default function ProjectsPage() {
   const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
   const itemColors = useMemo(() => {
-    if (!randomMode) return {};
+    if (!randomMode || typeof seed !== 'number' || isNaN(seed)) return {};
     const colors: Record<string, string> = {};
     ITEMS.forEach(item => {
-      colors[item.id] = getRandomColor();
+      colors[item.id] = getRandomColor(seed, item.id);
     });
     return colors;
   }, [randomMode, seed]);

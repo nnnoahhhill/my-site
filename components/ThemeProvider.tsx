@@ -15,9 +15,30 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
-// Utils
-export function getRandomColor() {
-  return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+// Utils - Generate a deterministic color based on seed and item identifier
+export function getRandomColor(seed: number, itemId?: string) {
+  // Ensure seed is a valid number
+  const safeSeed = typeof seed === 'number' && !isNaN(seed) ? seed : 0;
+  
+  // Create a combined seed from the main seed and item ID
+  let combinedSeed = safeSeed;
+  if (itemId) {
+    // Hash the item ID to a number
+    let hash = 0;
+    for (let i = 0; i < itemId.length; i++) {
+      hash = ((hash << 5) - hash) + itemId.charCodeAt(i);
+      hash = hash & hash;
+    }
+    combinedSeed = safeSeed + Math.abs(hash);
+  }
+  
+  // Use a simple seeded random algorithm to generate a deterministic color
+  // This ensures the same seed + itemId always produces the same color
+  let value = Math.abs(combinedSeed);
+  value = (value * 9301 + 49297) % 233280;
+  const normalized = value / 233280;
+  const colorValue = Math.floor(normalized * 16777215);
+  return '#' + colorValue.toString(16).padStart(6, '0');
 }
 
 export function ThemeProvider({ children, initialPunished = false }: { children: React.ReactNode, initialPunished?: boolean }) {
@@ -39,7 +60,8 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   const [seed, setSeed] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme-seed');
-      return saved ? parseInt(saved, 10) : 0;
+      const parsed = saved ? parseInt(saved, 10) : 0;
+      return isNaN(parsed) ? 0 : parsed;
     }
     return 0;
   });
@@ -87,8 +109,8 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   // Apply Theme Side Effects
   useEffect(() => {
     if (randomMode) {
-      document.body.style.backgroundColor = getRandomColor();
-      document.body.style.color = getRandomColor(); // Default text color, though items override
+      document.body.style.backgroundColor = getRandomColor(seed, 'body-bg');
+      document.body.style.color = getRandomColor(seed, 'body-text'); // Default text color, though items override
     } else {
       // Calculate Colors based on Brightness
       // Range: -10 ... 0 ... +10
@@ -139,13 +161,22 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   const changeBrightness = useCallback((delta: number) => {
     setRandomMode(false);
     setBrightness(b => {
+      // If we're in random mode, jump directly to full light or full dark
+      if (randomMode) {
+        if (delta > 0) {
+          return 5; // Full light: white bg, black text
+        } else {
+          return -5; // Full dark: black bg, white text
+        }
+      }
+      // Otherwise, increment/decrement normally
       const nb = b + delta;
       // Clamp to -10 to +10 range
       // -10 = black bg, invisible text
       // +10 = white bg, invisible text
       return Math.min(Math.max(nb, -10), 10);
     });
-  }, []);
+  }, [randomMode]);
 
   const triggerRandom = useCallback(() => {
     setRandomMode(true);

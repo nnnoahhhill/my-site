@@ -24,7 +24,7 @@ export default function StartupsPage() {
     if (!randomMode) return {};
     const colors: Record<string, string> = {};
     ITEMS.forEach(item => {
-      colors[item.id] = getRandomColor();
+      colors[item.id] = getRandomColor(seed, item.id);
     });
     return colors;
   }, [randomMode, seed]);
