@@ -17,19 +17,19 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
   // Ensure posts is an array
   const safePosts = Array.isArray(posts) ? posts : [];
   
-  const postItems = safePosts.map(post => ({
+  const postItems = useMemo(() => safePosts.map(post => ({
     id: `post-${post.slug}`,
     label: post.title,
     mass: 20,
     href: `/words/${encodeURIComponent(post.slug)}`,
-  }));
+  })), [safePosts]);
 
-  const staticItems = [
+  const staticItems = useMemo(() => [
     { id: 'suggest-idea', mass: 25, label: '' },
     { id: 'suggest-submit', mass: 10, label: '' },
-  ];
+  ], []);
   
-  const allItems = [...postItems, ...staticItems];
+  const allItems = useMemo(() => [...postItems, ...staticItems], [postItems, staticItems]);
 
   const physicsDefs = useMemo(() => allItems.map(item => ({
     id: item.id,
@@ -76,6 +76,12 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <style>{`
+        textarea::placeholder {
+          color: ${textColor};
+          opacity: 0.6;
+        }
+      `}</style>
       {allItems.map(item => {
         let content;
         const style = { color: itemColors[item.id] };
@@ -83,30 +89,22 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
         // Handle Form Inputs
         if (item.id === 'suggest-idea') {
              content = (
-               <>
-                 <style>{`
-                   textarea::placeholder {
-                     color: ${textColor};
-                     opacity: 0.6;
-                   }
-                 `}</style>
-                 <textarea 
-                   placeholder="What should I write about?" 
-                   value={suggestion.idea} 
-                   onChange={e => setSuggestion({...suggestion, idea: e.target.value})}
-                   style={{ 
-                     background: 'transparent', 
-                     border: `3px solid ${borderColor}`, 
-                     color: textColor, 
-                     padding: '0.5rem', 
-                     width: '400px', 
-                     maxWidth: '90vw',
-                     height: '150px',
-                     fontSize: '1rem',
-                     fontFamily: 'inherit'
-                   }}
-                 />
-               </>
+               <textarea 
+                 placeholder="What should I write about?" 
+                 value={suggestion.idea} 
+                 onChange={e => setSuggestion({...suggestion, idea: e.target.value})}
+                 style={{ 
+                   background: 'transparent', 
+                   border: `3px solid ${borderColor}`, 
+                   color: textColor, 
+                   padding: '0.5rem', 
+                   width: '400px', 
+                   maxWidth: '90vw',
+                   height: '150px',
+                   fontSize: '1rem',
+                   fontFamily: 'inherit'
+                 }}
+               />
              );
         } else if (item.id === 'suggest-submit') {
              content = <button 

@@ -93,7 +93,7 @@ export default function CultPage() {
 
   const isValidEmail = email.includes('@') && email.length > 3;
 
-  const inputStyle = {
+  const inputStyle = useMemo(() => ({
     background: 'transparent',
     border: `3px solid ${borderColor}`,
     color: textColor,
@@ -102,17 +102,17 @@ export default function CultPage() {
     fontSize: '1rem',
     pointerEvents: 'auto' as const,
     width: '300px',
-  };
+  }), [borderColor, textColor]);
 
-  const emailInputStyle = {
+  const emailInputStyle = useMemo(() => ({
     ...inputStyle,
     width: '400px',
-  };
+  }), [inputStyle]);
 
-  const joinButtonStyle = {
+  const joinButtonStyle = useMemo(() => ({
     ...inputStyle,
     width: '150px',
-  };
+  }), [inputStyle]);
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
