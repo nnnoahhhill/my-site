@@ -33,11 +33,23 @@ export default function CultPage() {
   // We switch items based on stage
   const items = stage === 'input' ? ITEMS_INPUT : (stage === 'done' ? ITEMS_DONE : []);
   
-  const physicsDefs = useMemo(() => items.map(item => ({
-    id: item.id,
-    label: item.label || item.id,
-    mass: item.mass
-  })), [items]); // Dependencies: items (which changes when stage changes)
+  const physicsDefs = useMemo(() => {
+    const physicsItems = items.map(item => ({
+      id: item.id,
+      label: item.label || item.id,
+      mass: item.mass
+    }));
+    // Add back button as static physics body
+    physicsItems.push({
+      id: 'back-button',
+      label: '←',
+      mass: Infinity,
+      static: true,
+      x: 12,
+      y: undefined,
+    });
+    return physicsItems;
+  }, [items]); // Dependencies: items (which changes when stage changes)
 
   const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
@@ -116,6 +128,23 @@ export default function CultPage() {
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+      {/* Register back button with physics - invisible collision body */}
+      <div
+        ref={registerRef('back-button')}
+        style={{
+          position: 'absolute',
+          fontSize: '1.5rem',
+          padding: '0.5rem',
+          lineHeight: 1,
+          width: '2.5rem',
+          height: '2.5rem',
+          pointerEvents: 'none',
+          opacity: 0,
+        }}
+        aria-hidden="true"
+      >
+        ←
+      </div>
       <style>{`
         input::placeholder {
           color: ${textColor};

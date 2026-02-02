@@ -3,7 +3,7 @@
 import { usePhysics } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme, getRandomColor } from '@/components/ThemeProvider';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { MoodPopup } from '@/components/MoodPopup';
 
 // Note: Metadata should be in a separate non-client file, but since this is client-only,
@@ -28,11 +28,23 @@ export default function Home() {
   const { changeBrightness, triggerRandom, randomMode, seed, setHomePageColors } = useTheme();
 
   // Map items to physics definitions
-  const physicsDefs = useMemo(() => ITEMS.map(item => ({
-    id: item.id,
-    label: item.label,
-    mass: item.mass, 
-  })), []); // constant
+  const physicsDefs = useMemo(() => {
+    const items = ITEMS.map(item => ({
+      id: item.id,
+      label: item.label,
+      mass: item.mass, 
+    }));
+    // Add back button as static physics body (home page doesn't show it, but add for consistency)
+    items.push({
+      id: 'back-button',
+      label: '←',
+      mass: Infinity,
+      static: true,
+      x: 12,
+      y: undefined,
+    });
+    return items;
+  }, []);
 
   const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
@@ -51,15 +63,37 @@ export default function Home() {
     ITEMS.forEach(item => {
       colors[item.id] = getRandomColor(seed, item.id);
     });
-    // Save home page colors (background + all text colors) for use on other pages
-    const bgColor = getRandomColor(seed, 'body-bg');
-    const textColors = ITEMS.map(item => colors[item.id]).filter(Boolean);
-    setHomePageColors(bgColor, textColors);
     return colors;
-  }, [randomMode, seed, setHomePageColors]);
+  }, [randomMode, seed]);
+
+  // Save home page colors in useEffect to avoid setState during render
+  useEffect(() => {
+    if (randomMode && Object.keys(itemColors).length > 0) {
+      const bgColor = getRandomColor(seed, 'body-bg');
+      const textColors = ITEMS.map(item => itemColors[item.id]).filter(Boolean);
+      setHomePageColors(bgColor, textColors);
+    }
+  }, [randomMode, seed, itemColors, setHomePageColors]);
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+      {/* Register back button with physics - invisible collision body */}
+      <div
+        ref={registerRef('back-button')}
+        style={{
+          position: 'absolute',
+          fontSize: '1.5rem',
+          padding: '0.5rem',
+          lineHeight: 1,
+          width: '2.5rem',
+          height: '2.5rem',
+          pointerEvents: 'none',
+          opacity: 0,
+        }}
+        aria-hidden="true"
+      >
+        ←
+      </div>
       {ITEMS.map(item => {
         const isActionButton = item.action !== undefined;
         const fontSize = item.id === 'title' 

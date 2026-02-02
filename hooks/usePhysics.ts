@@ -9,6 +9,7 @@ export type PhysicsItemDef = {
   x?: number;
   y?: number;
   speedMultiplier?: number; // Multiply initial speed (default 1.0)
+  static?: boolean; // If true, body doesn't move but still collides
 };
 
 export function usePhysics(initialItems: PhysicsItemDef[]) {
@@ -50,6 +51,10 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
       if (def.x !== undefined && def.y !== undefined) {
         x = def.x;
         y = def.y;
+      } else if (def.static && def.id === 'back-button') {
+        // Special handling for back button: position at bottom left
+        x = 12; // 0.75rem
+        y = containerH - rect.height - 12; // 0.75rem from bottom
       } else {
         do {
           x = Math.random() * (containerW - rect.width);
@@ -70,14 +75,18 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
         } while (attempts < maxAttempts);
       }
 
-      // Random velocity - slower base speed with randomization
-      const baseSpeed = 0.3; // slower base speed
-      const speedVariation = 0.2; // random variation range (0.3 to 0.5)
-      const speedMultiplier = def.speedMultiplier ?? 1.0;
-      const speed = (baseSpeed + (Math.random() * speedVariation)) * speedMultiplier; // each item gets random speed
-      const angle = Math.random() * Math.PI * 2;
-      const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed;
+      // Random velocity - slower base speed with randomization (skip for static bodies)
+      let vx = 0;
+      let vy = 0;
+      if (!def.static) {
+        const baseSpeed = 0.3; // slower base speed
+        const speedVariation = 0.2; // random variation range (0.3 to 0.5)
+        const speedMultiplier = def.speedMultiplier ?? 1.0;
+        const speed = (baseSpeed + (Math.random() * speedVariation)) * speedMultiplier; // each item gets random speed
+        const angle = Math.random() * Math.PI * 2;
+        vx = Math.cos(angle) * speed;
+        vy = Math.sin(angle) * speed;
+      }
 
       newBodies.push({
         id: def.id,
@@ -87,7 +96,8 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
         vy,
         width: rect.width,
         height: rect.height,
-        mass,
+        mass: def.static ? Infinity : mass, // Static bodies have infinite mass
+        static: def.static,
       });
     });
 
@@ -134,8 +144,9 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
     const hoveredSet = hoveredItemsRef.current;
     resolveCollisions(bodiesRef.current, { width, height }, hoveredSet);
 
-    // Update DOM
+    // Update DOM (skip static bodies as they don't move)
     bodiesRef.current.forEach((body) => {
+      if (body.static) return; // Don't update position for static bodies
       const el = itemsRef.current.get(body.id);
       if (el) {
         el.style.transform = `translate3d(${body.x}px, ${body.y}px, 0)`;

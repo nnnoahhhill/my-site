@@ -1,18 +1,14 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export function BackButton() {
+export function BackButton({ registerRef }: { registerRef?: (el: HTMLButtonElement | null) => void }) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  
-  // Don't show on home page
-  if (pathname === '/') {
-    return null;
-  }
   
   // Check if mobile and on words/[slug] page
   useEffect(() => {
@@ -49,8 +45,26 @@ export function BackButton() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile, lastScrollY]);
   
+  // Register with physics if registerRef is provided
+  useEffect(() => {
+    if (registerRef && buttonRef.current) {
+      registerRef(buttonRef.current);
+    }
+    return () => {
+      if (registerRef) {
+        registerRef(null);
+      }
+    };
+  }, [registerRef]);
+
+  // Don't show on home page
+  if (pathname === '/') {
+    return null;
+  }
+  
   return (
     <button
+      ref={buttonRef}
       onClick={() => window.history.back()}
       style={{
         position: 'fixed',

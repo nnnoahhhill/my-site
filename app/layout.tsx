@@ -48,8 +48,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <body>
         <ThemeProvider initialPunished={isPunished}>
-          <BackButton />
           {children}
+          <BackButton />
         </ThemeProvider>
       </body>
     </html>

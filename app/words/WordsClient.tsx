@@ -31,19 +31,32 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
   
   const allItems = useMemo(() => [...postItems, ...staticItems], [postItems, staticItems]);
 
-  const physicsDefs = useMemo(() => allItems.map(item => ({
-    id: item.id,
-    label: (item as any).label || item.id,
-    mass: item.mass
-  })), [allItems]);
+  const physicsDefs = useMemo(() => {
+    const items = allItems.map(item => ({
+      id: item.id,
+      label: (item as any).label || item.id,
+      mass: item.mass
+    }));
+    // Add back button as static physics body
+    items.push({
+      id: 'back-button',
+      label: '←',
+      mass: Infinity,
+      static: true,
+      x: 12,
+      y: undefined,
+    });
+    return items;
+  }, [allItems]);
 
   const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
   
   const itemColors = useMemo(() => {
     if (!randomMode) return {};
     const colors: Record<string, string> = {};
-    allItems.forEach(item => {
-      colors[item.id] = getColorFromHomePalette(item.id);
+    allItems.forEach((item, index) => {
+      // Use both itemId and index to ensure each item gets a different color
+      colors[item.id] = getColorFromHomePalette(`${item.id}-${index}`);
     });
     return colors;
   }, [randomMode, getColorFromHomePalette, allItems]);
@@ -76,6 +89,23 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+      {/* Register back button with physics - invisible collision body */}
+      <div
+        ref={registerRef('back-button')}
+        style={{
+          position: 'absolute',
+          fontSize: '1.5rem',
+          padding: '0.5rem',
+          lineHeight: 1,
+          width: '2.5rem',
+          height: '2.5rem',
+          pointerEvents: 'none',
+          opacity: 0,
+        }}
+        aria-hidden="true"
+      >
+        ←
+      </div>
       <style>{`
         textarea::placeholder {
           color: ${textColor};

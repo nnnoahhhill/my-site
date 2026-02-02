@@ -240,17 +240,21 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   }, []);
 
   // Get a color from the home page palette for other pages
+  // Each item gets a different color by using itemId + seed to create variety
   const getColorFromHomePalette = useCallback((itemId: string) => {
     if (homePageTextColors.length === 0) {
       // Fallback if no home page colors stored yet
       return getRandomColor(seed, itemId);
     }
-    // Use itemId to deterministically pick from the home page colors
-    let hash = 0;
+    // Use itemId + seed to create a hash that ensures different items get different colors
+    // This makes each item get a unique color from the home page palette
+    let hash = seed;
     for (let i = 0; i < itemId.length; i++) {
       hash = ((hash << 5) - hash) + itemId.charCodeAt(i);
       hash = hash & hash;
     }
+    // Add more variation by using the position in the string
+    hash = hash + itemId.length * 17;
     const index = Math.abs(hash) % homePageTextColors.length;
     return homePageTextColors[index];
   }, [homePageTextColors, seed]);

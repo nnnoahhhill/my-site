@@ -8,21 +8,24 @@ export type PhysicsBody = {
   height: number;
   mass: number;
   color?: string; // For the random mode
+  static?: boolean; // If true, body doesn't move but still collides
 };
 
 export const RESOLUTION_STEPS = 1; // can increase for better stability if needed
 
 export function resolveCollisions(items: PhysicsBody[], bounds: { width: number; height: number }, hoveredIds?: Set<string>) {
-  // 0. Update positions based on velocity FIRST (skip hovered items)
+  // 0. Update positions based on velocity FIRST (skip hovered items and static bodies)
   for (const item of items) {
-    if (!hoveredIds || !hoveredIds.has(item.id)) {
+    if (!item.static && (!hoveredIds || !hoveredIds.has(item.id))) {
       item.x += item.vx;
       item.y += item.vy;
     }
   }
 
-  // 1. Wall Collisions - ensure items never go off screen
+  // 1. Wall Collisions - ensure items never go off screen (skip static bodies)
   for (const item of items) {
+    if (item.static) continue; // Static bodies don't need wall collision checks
+    
     if (item.x < 0) {
       item.x = 0;
       item.vx *= -1;
@@ -82,33 +85,46 @@ function resolveElasticCollision(a: PhysicsBody, b: PhysicsBody) {
   const overlapY = (a.height / 2 + b.height / 2) - Math.abs(cyA - cyB);
 
   // Simple separation - push them apart along the collision normal
+  // Only move non-static bodies
   const totalMass = a.mass + b.mass;
   const mRatioA = b.mass / totalMass;
   const mRatioB = a.mass / totalMass;
   
   // Separation factor (small push)
   const nudge = 1.0; 
-  // Move A
-  a.x -= ux * nudge * mRatioA;
-  a.y -= uy * nudge * mRatioA;
-  // Move B
-  b.x += ux * nudge * mRatioB;
-  b.y += uy * nudge * mRatioB;
+  // Move A (only if not static)
+  if (!a.static) {
+    a.x -= ux * nudge * mRatioA;
+    a.y -= uy * nudge * mRatioA;
+  }
+  // Move B (only if not static)
+  if (!b.static) {
+    b.x += ux * nudge * mRatioB;
+    b.y += uy * nudge * mRatioB;
+  }
 
   // Relative velocity
   const va = a.vx * ux + a.vy * uy;
   const vb = b.vx * ux + b.vy * uy;
 
   // 1D Elastic Collision on the normal
-  const m1 = a.mass;
-  const m2 = b.mass;
+  // For static bodies, treat as infinite mass
+  const m1 = a.static ? Infinity : a.mass;
+  const m2 = b.static ? Infinity : b.mass;
+
+  // If both are static, no velocity change needed
+  if (a.static && b.static) return;
 
   const vaPrime = (va * (m1 - m2) + 2 * m2 * vb) / (m1 + m2);
   const vbPrime = (vb * (m2 - m1) + 2 * m1 * va) / (m1 + m2);
 
-  // Apply changes to velocity vectors
-  a.vx += (vaPrime - va) * ux;
-  a.vy += (vaPrime - va) * uy;
-  b.vx += (vbPrime - vb) * ux;
-  b.vy += (vbPrime - vb) * uy;
+  // Apply changes to velocity vectors (only for non-static bodies)
+  if (!a.static) {
+    a.vx += (vaPrime - va) * ux;
+    a.vy += (vaPrime - va) * uy;
+  }
+  if (!b.static) {
+    b.vx += (vbPrime - vb) * ux;
+    b.vy += (vbPrime - vb) * uy;
+  }
 }
