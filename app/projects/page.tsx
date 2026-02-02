@@ -2,7 +2,7 @@
 
 import { usePhysics } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
-import { useTheme, getRandomColor } from '@/components/ThemeProvider';
+import { useTheme } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
 
 const ITEMS = [
@@ -20,7 +20,7 @@ const ITEMS = [
 ];
 
 export default function ProjectsPage() {
-  const { randomMode, seed } = useTheme();
+  const { randomMode, seed, getColorFromHomePalette } = useTheme();
 
   const physicsDefs = useMemo(() => ITEMS.map(item => ({
     id: item.id,
@@ -31,13 +31,13 @@ export default function ProjectsPage() {
   const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
   const itemColors = useMemo(() => {
-    if (!randomMode || typeof seed !== 'number' || isNaN(seed)) return {};
+    if (!randomMode) return {};
     const colors: Record<string, string> = {};
     ITEMS.forEach(item => {
-      colors[item.id] = getRandomColor(seed, item.id);
+      colors[item.id] = getColorFromHomePalette(item.id);
     });
     return colors;
-  }, [randomMode, seed]);
+  }, [randomMode, getColorFromHomePalette]);
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>

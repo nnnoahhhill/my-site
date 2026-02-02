@@ -3,11 +3,11 @@
 import { useState, useMemo } from 'react';
 import { usePhysics } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
-import { useTheme, getRandomColor } from '@/components/ThemeProvider';
+import { useTheme } from '@/components/ThemeProvider';
 import type { Post } from '@/lib/posts';
 
 export default function WordsClient({ posts }: { posts: Post[] }) {
-  const { randomMode, seed, brightness } = useTheme();
+  const { randomMode, brightness, getColorFromHomePalette } = useTheme();
   const [suggestion, setSuggestion] = useState({ idea: '' });
   
   // Theme-aware border color: dark in light mode, white in dark mode
@@ -43,10 +43,10 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
     if (!randomMode) return {};
     const colors: Record<string, string> = {};
     allItems.forEach(item => {
-      colors[item.id] = getRandomColor(seed, item.id);
+      colors[item.id] = getColorFromHomePalette(item.id);
     });
     return colors;
-  }, [randomMode, seed, allItems]);
+  }, [randomMode, getColorFromHomePalette, allItems]);
 
   const handleItemClick = (item: any) => {
     if (item.href) {

@@ -13,17 +13,18 @@ const PREVIEW_IMAGES = [
   '/previews/light.png',
 ];
 
-function getRandomPreviewImage(): string {
-  // Use a deterministic random based on current date (changes daily)
-  // This ensures consistency during build but variety over time
-  const today = new Date();
-  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
-  const index = dayOfYear % PREVIEW_IMAGES.length;
-  return PREVIEW_IMAGES[index];
-}
-
 export async function generateMetadata(): Promise<Metadata> {
-  const previewImage = getRandomPreviewImage();
+  // Use the dynamic og-image API route
+  // The preview index comes from query param (?preview=0, ?preview=1, etc.)
+  // or rotates based on timestamp if no param is provided
+  const headersList = await headers();
+  const host = headersList.get('host') || 'localhost:3000';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const baseUrl = `${protocol}://${host}`;
+  
+  // Get preview index from header (set by middleware from query param or timestamp)
+  const previewIndex = headersList.get('x-preview-index') || '0';
+  const previewImage = `${baseUrl}/api/og-image?preview=${previewIndex}`;
   
   return {
     title: "Noah Hill",

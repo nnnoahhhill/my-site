@@ -2,7 +2,7 @@
 
 import { usePhysics } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
-import { useTheme, getRandomColor } from '@/components/ThemeProvider';
+import { useTheme } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
 
 const ITEMS = [
@@ -26,7 +26,7 @@ const ITEMS = [
 ];
 
 export default function AboutPage() {
-  const { randomMode, seed } = useTheme();
+  const { randomMode, getColorFromHomePalette } = useTheme();
 
   // Increase mass significantly and reduce speed to slow down movement
   const physicsDefs = useMemo(() => ITEMS.map(item => ({
@@ -42,10 +42,10 @@ export default function AboutPage() {
     if (!randomMode) return {};
     const colors: Record<string, string> = {};
     ITEMS.forEach(item => {
-      colors[item.id] = getRandomColor(seed, item.id);
+      colors[item.id] = getColorFromHomePalette(item.id);
     });
     return colors;
-  }, [randomMode, seed]);
+  }, [randomMode, getColorFromHomePalette]);
 
   // Generate deterministic but varied font sizes based on item ID
   const fontSizes = useMemo(() => {

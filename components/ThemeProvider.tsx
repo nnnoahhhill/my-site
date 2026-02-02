@@ -11,6 +11,8 @@ type ThemeContextType = {
   reset: () => void;
   keepIt: () => void;
   seed: number;
+  setHomePageColors: (bgColor: string, textColors: string[]) => void;
+  getColorFromHomePalette: (itemId: string) => string;
 };
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
@@ -69,6 +71,21 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   const [showTrap, setShowTrap] = useState(false); // Show the popup
   const [bgStyle, setBgStyle] = useState<React.CSSProperties>({});
   
+  // Store home page colors (background and text colors)
+  const [homePageBgColor, setHomePageBgColor] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme-home-bg') || null;
+    }
+    return null;
+  });
+  const [homePageTextColors, setHomePageTextColors] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme-home-text-colors');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+  
   // Save to localStorage whenever brightness changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -90,6 +107,18 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
     }
   }, [seed]);
   
+  // Save home page colors to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (homePageBgColor) {
+        localStorage.setItem('theme-home-bg', homePageBgColor);
+      }
+      if (homePageTextColors.length > 0) {
+        localStorage.setItem('theme-home-text-colors', JSON.stringify(homePageTextColors));
+      }
+    }
+  }, [homePageBgColor, homePageTextColors]);
+  
   // Trap Timer
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -109,7 +138,9 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   // Apply Theme Side Effects
   useEffect(() => {
     if (randomMode) {
-      document.body.style.backgroundColor = getRandomColor(seed, 'body-bg');
+      // Use stored home page background color if available, otherwise generate new one
+      const bgColor = homePageBgColor || getRandomColor(seed, 'body-bg');
+      document.body.style.backgroundColor = bgColor;
       document.body.style.color = getRandomColor(seed, 'body-text'); // Default text color, though items override
     } else {
       // Calculate Colors based on Brightness
@@ -156,7 +187,7 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
         document.body.style.color = `rgba(255, 255, 255, ${textOpacity})`;
       }
     }
-  }, [brightness, randomMode, seed]);
+  }, [brightness, randomMode, seed, homePageBgColor]);
 
   const changeBrightness = useCallback((delta: number) => {
     setRandomMode(false);
@@ -182,6 +213,9 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
     setRandomMode(true);
     setSeed(s => s + 1);
     setBrightness(0); // Reset brightness underlying?
+    // Clear stored home page colors so new ones will be generated
+    setHomePageBgColor(null);
+    setHomePageTextColors([]);
   }, []);
 
   const reset = useCallback(() => {
@@ -199,6 +233,28 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
     setShowTrap(false);
   }, []);
 
+  // Store home page colors (called from home page)
+  const setHomePageColors = useCallback((bgColor: string, textColors: string[]) => {
+    setHomePageBgColor(bgColor);
+    setHomePageTextColors(textColors);
+  }, []);
+
+  // Get a color from the home page palette for other pages
+  const getColorFromHomePalette = useCallback((itemId: string) => {
+    if (homePageTextColors.length === 0) {
+      // Fallback if no home page colors stored yet
+      return getRandomColor(seed, itemId);
+    }
+    // Use itemId to deterministically pick from the home page colors
+    let hash = 0;
+    for (let i = 0; i < itemId.length; i++) {
+      hash = ((hash << 5) - hash) + itemId.charCodeAt(i);
+      hash = hash & hash;
+    }
+    const index = Math.abs(hash) % homePageTextColors.length;
+    return homePageTextColors[index];
+  }, [homePageTextColors, seed]);
+
   return (
     <ThemeContext.Provider value={{
       brightness,
@@ -208,7 +264,9 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
       punished,
       reset,
       keepIt,
-      seed
+      seed,
+      setHomePageColors,
+      getColorFromHomePalette
     }}>
       {children}
       {/* Trap Modal */}

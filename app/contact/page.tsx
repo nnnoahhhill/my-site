@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { usePhysics } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
-import { useTheme, getRandomColor } from '@/components/ThemeProvider';
+import { useTheme } from '@/components/ThemeProvider';
 
 const ITEMS = [
   { id: 'blurb1', label: 'message me here to get in touch', mass: 15 },
@@ -16,7 +16,7 @@ const ITEMS = [
 ];
 
 export default function ContactPage() {
-  const { randomMode, seed, brightness } = useTheme();
+  const { randomMode, brightness, getColorFromHomePalette } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -48,10 +48,10 @@ export default function ContactPage() {
     if (!randomMode) return {};
     const colors: Record<string, string> = {};
     ITEMS.forEach(item => {
-      colors[item.id] = getRandomColor(seed, item.id);
+      colors[item.id] = getColorFromHomePalette(item.id);
     });
     return colors;
-  }, [randomMode, seed]);
+  }, [randomMode, getColorFromHomePalette]);
 
   const handleSubmit = async () => {
     if (!isValid || submitting) return;

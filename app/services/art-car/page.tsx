@@ -2,7 +2,7 @@
 
 import { usePhysics } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
-import { useTheme, getRandomColor } from '@/components/ThemeProvider';
+import { useTheme } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
 
 const ITEMS = [
@@ -18,7 +18,7 @@ const ITEMS = [
 ];
 
 export default function ArtCarPage() {
-  const { randomMode, seed } = useTheme();
+  const { randomMode, getColorFromHomePalette } = useTheme();
 
   // Make movement barely noticeable - very slow speed and high mass
   const physicsDefs = useMemo(() => ITEMS.map(item => ({
@@ -34,10 +34,10 @@ export default function ArtCarPage() {
     if (!randomMode) return {};
     const colors: Record<string, string> = {};
     ITEMS.forEach(item => {
-      colors[item.id] = getRandomColor(seed, item.id);
+      colors[item.id] = getColorFromHomePalette(item.id);
     });
     return colors;
-  }, [randomMode, seed]);
+  }, [randomMode, getColorFromHomePalette]);
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>

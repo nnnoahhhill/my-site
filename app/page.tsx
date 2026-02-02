@@ -25,7 +25,7 @@ const ITEMS = [
 ];
 
 export default function Home() {
-  const { changeBrightness, triggerRandom, randomMode, seed } = useTheme();
+  const { changeBrightness, triggerRandom, randomMode, seed, setHomePageColors } = useTheme();
 
   // Map items to physics definitions
   const physicsDefs = useMemo(() => ITEMS.map(item => ({
@@ -51,8 +51,12 @@ export default function Home() {
     ITEMS.forEach(item => {
       colors[item.id] = getRandomColor(seed, item.id);
     });
+    // Save home page colors (background + all text colors) for use on other pages
+    const bgColor = getRandomColor(seed, 'body-bg');
+    const textColors = ITEMS.map(item => colors[item.id]).filter(Boolean);
+    setHomePageColors(bgColor, textColors);
     return colors;
-  }, [randomMode, seed]);
+  }, [randomMode, seed, setHomePageColors]);
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
