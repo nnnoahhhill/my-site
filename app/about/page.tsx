@@ -13,8 +13,8 @@ const ITEMS = [
   { id: 'p4', label: 'Embedded systems and smart hardware', mass: 35 },
   { id: 'p5', label: 'General ai finessery of varying sorts', mass: 35 },
   { id: 'p6', label: 'formidably creative', mass: 20 },
-  { id: 'p7', label: 'has a propensity to dream', mass: 25, larger: true },
-  { id: 'p8', label: 'has the urge to make dreams come true', mass: 35, larger: true },
+  { id: 'p7', label: 'has a propensity to dream', mass: 25, larger: true, forceLines: 2 },
+  { id: 'p8', label: 'has the urge to make dreams come true', mass: 35, larger: true, forceLines: 3 },
   { id: 'p9', label: 'helped raise and manage $10M+', mass: 30 },
   { id: 'p10', label: 'really cool and a pleasure to work with', mass: 35 },
   { id: 'p11', label: 'more than five granted patents', mass: 30 },
@@ -124,6 +124,7 @@ export default function AboutPage() {
             label={item.label}
             registerRef={registerRef(item.id)}
             setHovered={setHovered}
+            forceLines={(item as any).forceLines}
             style={{ 
               color: itemColors[item.id],
               fontSize: fontSizes[item.id]

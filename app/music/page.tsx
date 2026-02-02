@@ -71,7 +71,7 @@ export default function MusicPage() {
       {ITEMS.map(item => {
         let content;
         if ((item as any).embed === 'soundcloud') {
-          // SoundCloud embed - wider on desktop, shrink only on mobile
+          // SoundCloud embed - wider on mobile
           content = (
             <iframe
               width="440"
@@ -82,25 +82,25 @@ export default function MusicPage() {
               src={`https://w.soundcloud.com/player/?url=${encodeURIComponent((item as any).url)}&color=%23203235&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`}
               style={{ 
                 border: 'none',
-                width: 'clamp(200px, 50vw, 440px)',
-                height: 'clamp(133px, 15vw, 133px)',
+                width: 'clamp(250px, 70vw, 440px)',
+                height: 'clamp(133px, 20vw, 133px)',
                 maxWidth: '100%',
-                minWidth: '200px'
+                minWidth: '250px'
               }}
             />
           );
         } else if ((item as any).embed === 'spotify') {
-          // Spotify embed - wider on desktop, shrink only on mobile, 8px taller than SoundCloud
+          // Spotify embed - wider on mobile, 8px taller than SoundCloud
           content = (
             <iframe
               data-testid="embed-iframe"
               style={{ 
                 borderRadius: '12px', 
                 border: 'none',
-                width: 'clamp(200px, 50vw, 440px)',
-                height: 'clamp(141px, 16vw, 141px)',
+                width: 'clamp(250px, 70vw, 440px)',
+                height: 'clamp(141px, 20vw, 141px)',
                 maxWidth: '100%',
-                minWidth: '200px'
+                minWidth: '250px'
               }}
               src={(item as any).url}
               width="440"

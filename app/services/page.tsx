@@ -67,20 +67,25 @@ export default function ServicesPage() {
       >
         ←
       </div>
-      {ITEMS.map(item => (
-        <FloatingItem
-          key={item.id}
-          id={item.id}
-          label={item.label}
-          href={(item as any).href}
-          registerRef={registerRef(item.id)}
-          setHovered={setHovered}
-          style={{ 
-            color: itemColors[item.id],
-            fontSize: item.id === 'artcar' ? '2rem' : undefined
-          }}
-        />
-      ))}
+      {ITEMS.map(item => {
+        const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+        return (
+          <FloatingItem
+            key={item.id}
+            id={item.id}
+            label={item.label}
+            href={(item as any).href}
+            registerRef={registerRef(item.id)}
+            setHovered={setHovered}
+            style={{ 
+              color: itemColors[item.id],
+              fontSize: isMobile
+                ? item.id === 'artcar' ? 'clamp(1.2rem, 4vw, 1.8rem)' : 'clamp(1rem, 3.5vw, 1.5rem)'
+                : item.id === 'artcar' ? '2rem' : undefined
+            }}
+          />
+        );
+      })}
     </main>
   );
 }

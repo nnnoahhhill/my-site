@@ -114,6 +114,8 @@ export default function CultPage() {
     fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const,
     width: 'clamp(200px, 70vw, 300px)',
+    position: 'relative' as const,
+    zIndex: 10, // Ensure inputs are on top when overlapping
   }), [textColor, borderColor, brightness]);
 
   const emailInputStyle = useMemo(() => ({

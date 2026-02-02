@@ -53,12 +53,18 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           margin-bottom: 1rem;
         }
         @media (max-width: 768px) {
+          html, body {
+            overflow-y: scroll !important;
+            -webkit-overflow-scrolling: touch;
+          }
           .post-article {
             max-width: 90% !important;
             padding: 0.5rem !important;
           }
           .post-main {
             padding: 1rem 0.5rem !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
           }
         }
         @media (min-width: 769px) and (max-width: 1024px) {

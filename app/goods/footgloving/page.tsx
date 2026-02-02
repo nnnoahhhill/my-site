@@ -69,6 +69,13 @@ export default function FootGlovingPage() {
         const imageSrc = (item as any).src;
         const isSmall = (item as any).small;
         
+        // Make larger text segments smaller on mobile
+        const fontSize = isSmall 
+          ? '0.7rem' 
+          : (item.id === 'desc1' || item.id === 'desc2')
+            ? 'clamp(0.9rem, 3vw, 1.2rem)' // Smaller on mobile for larger text segments
+            : 'clamp(1.1rem, 3.5vw, 1.5rem)'; // Slightly larger for other text
+        
         return (
           <FloatingItem
             key={item.id}
@@ -79,7 +86,7 @@ export default function FootGlovingPage() {
             setHovered={setHovered}
             style={{ 
               color: itemColors[item.id],
-              fontSize: isSmall ? '0.7rem' : undefined
+              fontSize
             }}
           >
             {isImage && imageSrc ? (
@@ -87,7 +94,7 @@ export default function FootGlovingPage() {
                 src={imageSrc} 
                 alt={item.label || 'FootGloves'} 
                 style={{ 
-                  maxWidth: 'clamp(200px, 80vw, 400px)', 
+                  maxWidth: 'clamp(150px, 60vw, 400px)', // Smaller on mobile, larger on desktop
                   height: 'auto',
                   display: 'block',
                   width: 'auto'

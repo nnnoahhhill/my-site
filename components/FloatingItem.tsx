@@ -12,13 +12,16 @@ type Props = {
   setHovered?: (id: string, isHovered: boolean) => void;
   style?: React.CSSProperties;
   children?: React.ReactNode;
+  forceLines?: number; // Force specific number of lines on mobile
 };
 
-export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered, style, children }: Props) => {
+export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered, style, children, forceLines }: Props) => {
   const [tapped, setTapped] = useState(false);
   const [splitContent, setSplitContent] = useState<{ lines: string[] } | null>(null);
   const itemRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const dragStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const isDraggingRef = useRef(false);
 
   // Check if text needs to be split on mobile (50% max width constraint)
   useEffect(() => {
@@ -52,7 +55,44 @@ export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered
       if (!itemRef.current || !label) return;
       
       const viewportWidth = window.innerWidth;
-      const maxWidth = viewportWidth * 0.5; // 50% max width
+      const maxWidth = viewportWidth * 0.65; // 65% max width
+      
+      // If forceLines is specified, always split into that many lines
+      if (forceLines) {
+        const words = label.split(' ');
+        const lines: string[] = [];
+        
+        if (forceLines === 2) {
+          // Split into 2 lines
+          if (words.length === 1) {
+            const mid = Math.ceil(label.length / 2);
+            lines.push(label.slice(0, mid));
+            lines.push(label.slice(mid));
+          } else {
+            const midPoint = Math.ceil(words.length / 2);
+            lines.push(words.slice(0, midPoint).join(' '));
+            lines.push(words.slice(midPoint).join(' '));
+          }
+        } else if (forceLines === 3) {
+          // Split into 3 lines
+          if (words.length === 1) {
+            const third = Math.ceil(label.length / 3);
+            lines.push(label.slice(0, third));
+            lines.push(label.slice(third, third * 2));
+            lines.push(label.slice(third * 2));
+          } else {
+            const thirdPoint = Math.ceil(words.length / 3);
+            lines.push(words.slice(0, thirdPoint).join(' '));
+            lines.push(words.slice(thirdPoint, thirdPoint * 2).join(' '));
+            lines.push(words.slice(thirdPoint * 2).join(' '));
+          }
+        }
+        
+        if (lines.length > 0) {
+          setSplitContent({ lines });
+          return;
+        }
+      }
       
       const fullWidth = measureText(label);
       
@@ -114,7 +154,7 @@ export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered
       timeouts.forEach(clearTimeout);
       window.removeEventListener('resize', checkAndSplit);
     };
-  }, [id, label, children, style?.fontSize]);
+  }, [id, label, children, style?.fontSize, forceLines]);
 
   let content: React.ReactNode = label;
 
@@ -143,24 +183,120 @@ export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered
     content = <span>{label}</span>;
   }
 
-  const handleTouch = (e: React.TouchEvent) => {
-    // Only handle touch for items with href or onClick
-    if (!href && !onClick) return;
-    
-    // Prevent default link behavior on first tap
-    if (!tapped) {
-      e.preventDefault();
-      setTapped(true);
-      // Reset after delay if no second tap
-      setTimeout(() => setTapped(false), 2000);
-    } else {
-      // Second tap - navigate or trigger action
-      if (href) {
-        router.push(href);
-      } else if (onClick) {
-        onClick();
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      dragStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now()
+      };
+      isDraggingRef.current = false;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (dragStartRef.current && e.touches.length === 1) {
+      const touch = e.touches[0];
+      const dx = touch.clientX - dragStartRef.current.x;
+      const dy = touch.clientY - dragStartRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // If moved more than 10px, consider it a drag
+      if (distance > 10) {
+        isDraggingRef.current = true;
+        e.preventDefault(); // Prevent scrolling while dragging
       }
-      setTapped(false);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (dragStartRef.current && isDraggingRef.current) {
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - dragStartRef.current.x;
+      const dy = touch.clientY - dragStartRef.current.y;
+      const time = Date.now() - dragStartRef.current.time;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance > 10 && time < 500) {
+        // Calculate velocity (pixels per second)
+        const velocity = distance / (time / 1000);
+        const speed = Math.min(velocity * 0.1, 5); // Cap at 5
+        const angle = Math.atan2(dy, dx);
+        
+        // Apply velocity to physics body
+        const body = (window as any).__physicsBodies?.get(id);
+        if (body) {
+          body.vx = Math.cos(angle) * speed;
+          body.vy = Math.sin(angle) * speed;
+        }
+      }
+      
+      dragStartRef.current = null;
+      isDraggingRef.current = false;
+    } else if (!isDraggingRef.current) {
+      // Handle tap for navigation
+      if (!href && !onClick) return;
+      
+      if (!tapped) {
+        e.preventDefault();
+        setTapped(true);
+        setTimeout(() => setTapped(false), 2000);
+      } else {
+        if (href) {
+          router.push(href);
+        } else if (onClick) {
+          onClick();
+        }
+        setTapped(false);
+      }
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) { // Left mouse button
+      dragStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        time: Date.now()
+      };
+      isDraggingRef.current = false;
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (dragStartRef.current && e.buttons === 1) {
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance > 10) {
+        isDraggingRef.current = true;
+      }
+    }
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (dragStartRef.current && isDraggingRef.current) {
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      const time = Date.now() - dragStartRef.current.time;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance > 10 && time < 500) {
+        const velocity = distance / (time / 1000);
+        const speed = Math.min(velocity * 0.1, 5);
+        const angle = Math.atan2(dy, dx);
+        
+        const body = (window as any).__physicsBodies?.get(id);
+        if (body) {
+          body.vx = Math.cos(angle) * speed;
+          body.vy = Math.sin(angle) * speed;
+        }
+      }
+      
+      dragStartRef.current = null;
+      isDraggingRef.current = false;
     }
   };
 
@@ -174,13 +310,20 @@ export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered
       ref={combinedRef}
       className={styles.item}
       onClick={onClick}
-      onTouchEnd={handleTouch}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       onMouseEnter={() => setHovered?.(id, true)}
       onMouseLeave={() => setHovered?.(id, false)}
       style={{
         ...style,
         textDecoration: tapped ? 'underline' : style?.textDecoration,
         opacity: 0, // Hidden until positioned
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
       id={`floating-${id}`}
     >

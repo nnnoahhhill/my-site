@@ -143,7 +143,9 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
                    maxWidth: '90vw',
                    height: 'clamp(80px, 25vh, 150px)',
                    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
-                   fontFamily: 'inherit'
+                   fontFamily: 'inherit',
+                   position: 'relative' as const,
+                   zIndex: 10, // Ensure inputs are on top when overlapping
                  }}
                />
              );
@@ -159,7 +161,9 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
                  cursor: isValid ? 'pointer' : 'not-allowed',
                  opacity: isValid ? 1 : 0.5,
                  fontWeight: 'bold',
-                 fontSize: 'clamp(0.8rem, 2.5vw, 1rem)'
+                 fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+                 position: 'relative' as const,
+                 zIndex: 10, // Ensure buttons are on top when overlapping
                }}
              >
                Send

@@ -138,6 +138,18 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
     return () => cancelAnimationFrame(initFrame);
   }, [initialItems]);
 
+  // Expose bodies to window for drag and throw
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ready) {
+      if (!(window as any).__physicsBodies) {
+        (window as any).__physicsBodies = new Map();
+      }
+      bodiesRef.current.forEach(body => {
+        (window as any).__physicsBodies.set(body.id, body);
+      });
+    }
+  }, [ready]);
+
   const update = useCallback(() => {
     if (!containerRef.current) return;
     const containerRect = containerRef.current.getBoundingClientRect();
@@ -157,6 +169,10 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
       const el = itemsRef.current.get(body.id);
       if (el) {
         el.style.transform = `translate3d(${body.x}px, ${body.y}px, 0)`;
+      }
+      // Update window reference
+      if (typeof window !== 'undefined' && (window as any).__physicsBodies) {
+        (window as any).__physicsBodies.set(body.id, body);
       }
     });
 
