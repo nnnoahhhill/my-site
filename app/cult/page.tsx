@@ -122,26 +122,6 @@ export default function CultPage() {
     alert('Link copied to clipboard');
   };
 
-  if (stage === 'gif') {
-    return (
-      <div style={{ 
-        width: '100vw', height: '100vh', 
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'black' 
-      }}>
-         <img 
-           src="https://media.tenor.com/zyzx_DAbmeUp.gif" 
-           alt="Dab me up" 
-           style={{ maxWidth: '100%', maxHeight: '100%' }}
-         />
-      </div>
-    );
-  }
-
-  if (stage === 'fade') {
-    return <div style={{ width: '100vw', height: '100vh', background: 'black' }} />;
-  }
-
   const isValidEmail = email.includes('@') && email.length > 3;
 
   const inputStyle = useMemo(() => ({
@@ -166,6 +146,27 @@ export default function CultPage() {
     ...inputStyle,
     width: 'clamp(100px, 40vw, 150px)',
   }), [inputStyle]);
+
+  // Early returns after all hooks
+  if (stage === 'gif') {
+    return (
+      <div style={{ 
+        width: '100vw', height: '100vh', 
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'black' 
+      }}>
+         <img 
+           src="https://media.tenor.com/zyzx_DAbmeUp.gif" 
+           alt="Dab me up" 
+           style={{ maxWidth: '100%', maxHeight: '100%' }}
+         />
+      </div>
+    );
+  }
+
+  if (stage === 'fade') {
+    return <div style={{ width: '100vw', height: '100vh', background: 'black' }} />;
+  }
 
   return (
     <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
