@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Send notification email to your personal email
-    const personalEmail = process.env.PERSONAL_EMAIL || 'your-email@example.com';
+    const personalEmail = process.env.PERSONAL_EMAIL || 'nnnoahhhill@gmail.com';
     await sendEmail({
       to: personalEmail,
       subject: `New Cult Signup: ${name || email}`,
@@ -38,15 +38,22 @@ export async function POST(req: NextRequest) {
     });
 
     // Send confirmation email to the signup
+    const confirmationSubject = 'u knew i was kidding right';
+    const confirmationBody = '<p>could never leave you hanging like that, of course ima hit you with some confirmation</p>';
+    
     await sendEmail({
       to: email,
-      subject: 'Welcome to the cult!',
+      subject: confirmationSubject,
+      html: confirmationBody,
+    });
+
+    // Send a copy to personal inbox
+    await sendEmail({
+      to: personalEmail,
+      subject: `[Copy] ${confirmationSubject}`,
       html: `
-        <h2>Thanks for joining!</h2>
-        <p>Hey ${name || 'there'},</p>
-        <p>You're now part of the movement. We'll be in touch soon.</p>
-        <p>Stay weird,</p>
-        <p>Noah</p>
+        <p><strong>Sent to:</strong> ${email}${name ? ` (${name})` : ''}</p>
+        ${confirmationBody}
       `,
     });
 

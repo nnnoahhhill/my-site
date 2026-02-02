@@ -15,10 +15,8 @@ const ITEMS_INPUT = [
 ];
 
 const ITEMS_DONE = [
-  { id: 'dope', label: 'dope, thanks', mass: 30 },
   { id: 'blurb3', label: 'tell your friends', mass: 20 },
   { id: 'invite', label: 'Invite a Friend', mass: 20 },
-  { id: 'fineprint', label: 'you will not get any confirmation just trust me', mass: 10, small: true },
 ];
 
 export default function CultPage() {
@@ -207,13 +205,10 @@ export default function CultPage() {
       `}</style>
        {items.map(item => {
           let content;
-          const isSmall = (item as any).small;
           if (item.id === 'blurb1' || item.id === 'blurb2') {
             content = <span style={{ fontSize: 'clamp(0.8rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
           } else if (item.id === 'blurb3') {
             content = <span style={{ fontSize: 'clamp(0.6rem, 1.8vw, 0.7rem)' }}>{item.label}</span>;
-          } else if (item.id === 'fineprint') {
-            content = <span style={{ fontSize: 'clamp(0.5rem, 1.5vw, 0.7rem)', opacity: 0.7 }}>{item.label}</span>;
           } else if (item.id === 'name') {
              content = <input 
                type="text"

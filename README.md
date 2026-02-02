@@ -18,17 +18,24 @@ This is a scaffold for the floating minimalist site.
 
 1. Sign up at https://resend.com
 2. Get your API key from the dashboard
-3. Add to Vercel environment variables:
+3. **Verify your domain:**
+   - Go to https://resend.com/domains
+   - Click "Add Domain" and enter your domain
+   - Add the DNS records (SPF, DKIM, DMARC) that Resend provides
+   - Wait for verification (usually a few minutes)
+4. Add to Vercel environment variables:
    - `RESEND_API_KEY` - Your Resend API key
+   - `RESEND_FROM_EMAIL` - Your verified email address (e.g., `noreply@yourdomain.com`)
    - `PERSONAL_EMAIL` - Your personal email address (where you want to receive notifications)
 
-**Note:** For production, you'll need to verify a domain with Resend. For development/testing, you can use `onboarding@resend.dev` as the sender (limited to test emails).
+**Note:** For development/testing, you can use `onboarding@resend.dev` as the sender (limited to test emails) if you haven't verified a domain yet.
 
 ### Environment Variables Summary
 
 Add these to your Vercel project (Settings → Environment Variables):
 
 - `RESEND_API_KEY` - From Resend dashboard
+- `RESEND_FROM_EMAIL` - Your verified email address (e.g., `noreply@yourdomain.com`)
 - `PERSONAL_EMAIL` - Your email address
 - `KV_REST_API_URL` - Auto-added by Vercel KV
 - `KV_REST_API_TOKEN` - Auto-added by Vercel KV

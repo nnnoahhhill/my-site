@@ -76,7 +76,6 @@ export default function ContactPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      alert('Message sent!');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (e) {
       console.error('Failed to submit:', e);

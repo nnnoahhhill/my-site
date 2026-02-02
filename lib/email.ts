@@ -6,7 +6,7 @@ export async function sendEmail({
   to,
   subject,
   html,
-  from = 'onboarding@resend.dev', // You'll need to verify a domain with Resend
+  from = process.env.RESEND_FROM_EMAIL || 'noreply@nnnoahhhill.com', // Use your verified domain
 }: {
   to: string;
   subject: string;

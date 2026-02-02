@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Send notification email to your personal email
-    const personalEmail = process.env.PERSONAL_EMAIL || 'your-email@example.com';
+    const personalEmail = process.env.PERSONAL_EMAIL || 'nnnoahhhill@gmail.com';
     await sendEmail({
       to: personalEmail,
       subject: `Contact Form: ${subject}`,
@@ -46,15 +46,22 @@ export async function POST(req: NextRequest) {
     });
 
     // Send confirmation email to the sender
+    const confirmationSubject = 'u knew i was kidding right';
+    const confirmationBody = '<p>could never leave you hanging like that, of course ima hit you with some confirmation</p>';
+    
     await sendEmail({
       to: email,
-      subject: 'Message received!',
+      subject: confirmationSubject,
+      html: confirmationBody,
+    });
+
+    // Send a copy to personal inbox
+    await sendEmail({
+      to: personalEmail,
+      subject: `[Copy] ${confirmationSubject}`,
       html: `
-        <h2>Thanks for reaching out!</h2>
-        <p>Hey ${name},</p>
-        <p>I got your message about "${subject}". I'll get back to you as soon as I can.</p>
-        <p>Best,</p>
-        <p>Noah</p>
+        <p><strong>Sent to:</strong> ${email} (${name})</p>
+        ${confirmationBody}
       `,
     });
 
