@@ -33,19 +33,34 @@ export function resolveCollisions(items: PhysicsBody[], bounds: { width: number;
     // Check and handle X boundaries
     if (item.x < 0) {
       item.x = 0;
-      item.vx = Math.abs(item.vx) * -1; // Ensure velocity points inward
+      item.vx = Math.abs(item.vx); // Bounce right (positive)
     } else if (item.x > maxX) {
       item.x = maxX;
-      item.vx = Math.abs(item.vx); // Ensure velocity points inward
+      item.vx = -Math.abs(item.vx); // Bounce left (negative)
     }
 
     // Check and handle Y boundaries
     if (item.y < 0) {
       item.y = 0;
-      item.vy = Math.abs(item.vy) * -1; // Ensure velocity points inward
+      item.vy = Math.abs(item.vy); // Bounce down (positive)
     } else if (item.y > maxY) {
       item.y = maxY;
-      item.vy = Math.abs(item.vy); // Ensure velocity points inward
+      item.vy = -Math.abs(item.vy); // Bounce up (negative)
+    }
+    
+    // Ensure minimum velocity to prevent items from coming to a standstill
+    const minSpeed = 0.05;
+    const speed = Math.sqrt(item.vx * item.vx + item.vy * item.vy);
+    if (speed < minSpeed && speed > 0) {
+      // Normalize and scale to minimum speed
+      const scale = minSpeed / speed;
+      item.vx *= scale;
+      item.vy *= scale;
+    } else if (speed === 0) {
+      // If completely stopped, give it a random small velocity
+      const angle = Math.random() * Math.PI * 2;
+      item.vx = Math.cos(angle) * minSpeed;
+      item.vy = Math.sin(angle) * minSpeed;
     }
   }
 
