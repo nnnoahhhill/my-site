@@ -56,9 +56,16 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
         x = 12; // 0.75rem
         y = containerH - rect.height - 12; // 0.75rem from bottom
       } else {
+        // Ensure initial position keeps item fully on screen
+        const maxX = Math.max(0, containerW - rect.width);
+        const maxY = Math.max(0, containerH - rect.height);
+        
         do {
-          x = Math.random() * (containerW - rect.width);
-          y = Math.random() * (containerH - rect.height);
+          x = Math.random() * maxX;
+          y = Math.random() * maxY;
+          // Clamp to ensure it's within bounds
+          x = Math.max(0, Math.min(x, maxX));
+          y = Math.max(0, Math.min(y, maxY));
           attempts++;
           
           // Check overlap with existing bodies
@@ -79,8 +86,8 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
       let vx = 0;
       let vy = 0;
       if (!def.static) {
-        const baseSpeed = 0.3; // slower base speed
-        const speedVariation = 0.2; // random variation range (0.3 to 0.5)
+        const baseSpeed = 0.2; // slower base speed (reduced from 0.3)
+        const speedVariation = 0.2; // random variation range (0.2 to 0.4, shifted down from 0.3 to 0.5)
         const speedMultiplier = def.speedMultiplier ?? 1.0;
         const speed = (baseSpeed + (Math.random() * speedVariation)) * speedMultiplier; // each item gets random speed
         const angle = Math.random() * Math.PI * 2;

@@ -146,9 +146,20 @@ export default function CultPage() {
         ←
       </div>
       <style>{`
-        input::placeholder {
+        input::placeholder,
+        textarea::placeholder {
           color: ${textColor};
-          opacity: 0.6;
+          opacity: ${brightness > 0 ? 0.5 : 0.7};
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus {
+          -webkit-text-fill-color: ${textColor};
+          -webkit-box-shadow: 0 0 0px 1000px ${brightness > 0 ? '#fff' : '#000'} inset;
+          box-shadow: 0 0 0px 1000px ${brightness > 0 ? '#fff' : '#000'} inset;
         }
       `}</style>
        {items.map(item => {

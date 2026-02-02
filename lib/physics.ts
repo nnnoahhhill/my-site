@@ -26,20 +26,26 @@ export function resolveCollisions(items: PhysicsBody[], bounds: { width: number;
   for (const item of items) {
     if (item.static) continue; // Static bodies don't need wall collision checks
     
+    // Clamp position first to ensure it's always within bounds
+    const maxX = Math.max(0, bounds.width - item.width);
+    const maxY = Math.max(0, bounds.height - item.height);
+    
+    // Check and handle X boundaries
     if (item.x < 0) {
       item.x = 0;
-      item.vx *= -1;
-    } else if (item.x + item.width > bounds.width) {
-      item.x = Math.max(0, bounds.width - item.width);
-      item.vx *= -1;
+      item.vx = Math.abs(item.vx) * -1; // Ensure velocity points inward
+    } else if (item.x > maxX) {
+      item.x = maxX;
+      item.vx = Math.abs(item.vx); // Ensure velocity points inward
     }
 
+    // Check and handle Y boundaries
     if (item.y < 0) {
       item.y = 0;
-      item.vy *= -1;
-    } else if (item.y + item.height > bounds.height) {
-      item.y = Math.max(0, bounds.height - item.height);
-      item.vy *= -1;
+      item.vy = Math.abs(item.vy) * -1; // Ensure velocity points inward
+    } else if (item.y > maxY) {
+      item.y = maxY;
+      item.vy = Math.abs(item.vy); // Ensure velocity points inward
     }
   }
 
