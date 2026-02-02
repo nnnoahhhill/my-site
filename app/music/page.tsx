@@ -71,10 +71,10 @@ export default function MusicPage() {
       {ITEMS.map(item => {
         let content;
         if ((item as any).embed === 'soundcloud') {
-          // SoundCloud embed - short but wide, smaller square on mobile
+          // SoundCloud embed - short but wide, max 50% width on mobile
           content = (
             <iframe
-              width="450"
+              width="440"
               height="133"
               scrolling="no"
               frameBorder="no"
@@ -82,27 +82,27 @@ export default function MusicPage() {
               src={`https://w.soundcloud.com/player/?url=${encodeURIComponent((item as any).url)}&color=%23203235&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`}
               style={{ 
                 border: 'none',
-                width: 'clamp(120px, 30vw, 450px)',
-                height: 'clamp(120px, 30vw, 133px)',
-                maxWidth: '100%'
+                width: 'clamp(120px, min(30vw, 50%), 440px)',
+                height: 'clamp(120px, min(30vw, 50%), 133px)',
+                maxWidth: 'min(440px, 50%)'
               }}
             />
           );
         } else if ((item as any).embed === 'spotify') {
-          // Spotify embed - thin and wide, smaller square on mobile
+          // Spotify embed - thin and wide, max 50% width on mobile
           content = (
             <iframe
               data-testid="embed-iframe"
               style={{ 
-                borderRadius: '2px', 
+                borderRadius: '12px', 
                 border: 'none',
-                width: 'clamp(120px, 30vw, 450px)',
-                height: 'clamp(120px, 30vw, 181px)',
-                maxWidth: '100%'
+                width: 'clamp(120px, min(30vw, 50%), 440px)',
+                height: 'clamp(120px, min(30vw, 50%), 176px)',
+                maxWidth: 'min(440px, 50%)'
               }}
               src={(item as any).url}
-              width="450"
-              height="181"
+              width="440"
+              height="176"
               frameBorder="0"
               allowFullScreen
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
