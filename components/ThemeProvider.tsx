@@ -240,22 +240,32 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   }, []);
 
   // Get a color from the home page palette for other pages
-  // Each item gets a different color by using itemId + seed to create variety
+  // Each item gets a different color by using the same seeded random approach as getRandomColor
   const getColorFromHomePalette = useCallback((itemId: string) => {
     if (homePageTextColors.length === 0) {
       // Fallback if no home page colors stored yet
       return getRandomColor(seed, itemId);
     }
-    // Use itemId + seed to create a hash that ensures different items get different colors
-    // This makes each item get a unique color from the home page palette
-    let hash = seed;
+    
+    // Use the same approach as getRandomColor to create a deterministic but varied index
+    const safeSeed = typeof seed === 'number' && !isNaN(seed) ? seed : 0;
+    
+    // Hash the item ID to a number (same as getRandomColor)
+    let hash = 0;
     for (let i = 0; i < itemId.length; i++) {
       hash = ((hash << 5) - hash) + itemId.charCodeAt(i);
       hash = hash & hash;
     }
-    // Add more variation by using the position in the string
-    hash = hash + itemId.length * 17;
-    const index = Math.abs(hash) % homePageTextColors.length;
+    const combinedSeed = safeSeed + Math.abs(hash);
+    
+    // Use the same seeded random algorithm as getRandomColor
+    let value = Math.abs(combinedSeed);
+    value = (value * 9301 + 49297) % 233280;
+    const normalized = value / 233280;
+    
+    // Use this to pick an index from the palette
+    const index = Math.floor(normalized * homePageTextColors.length);
+    
     return homePageTextColors[index];
   }, [homePageTextColors, seed]);
 

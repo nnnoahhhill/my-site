@@ -107,14 +107,14 @@ export default function CultPage() {
 
   const inputStyle = useMemo(() => ({
     background: 'transparent',
-    border: `3px solid #000`,
+    border: `3px solid ${borderColor}`,
     color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
     fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const,
     width: 'clamp(200px, 70vw, 300px)',
-  }), [textColor]);
+  }), [textColor, borderColor]);
 
   const emailInputStyle = useMemo(() => ({
     ...inputStyle,

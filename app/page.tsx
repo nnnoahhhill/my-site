@@ -70,8 +70,12 @@ export default function Home() {
   useEffect(() => {
     if (randomMode && Object.keys(itemColors).length > 0) {
       const bgColor = getRandomColor(seed, 'body-bg');
-      const textColors = ITEMS.map(item => itemColors[item.id]).filter(Boolean);
-      setHomePageColors(bgColor, textColors);
+      // Get all unique colors from items (excluding undefined/null)
+      const textColors = ITEMS.map(item => itemColors[item.id]).filter((color): color is string => Boolean(color));
+      // Ensure we have colors to save
+      if (textColors.length > 0) {
+        setHomePageColors(bgColor, textColors);
+      }
     }
   }, [randomMode, seed, itemColors, setHomePageColors]);
 
