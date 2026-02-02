@@ -10,6 +10,7 @@ export type PhysicsItemDef = {
   y?: number;
   speedMultiplier?: number; // Multiply initial speed (default 1.0)
   static?: boolean; // If true, body doesn't move but still collides
+  centerSpawn?: boolean; // If true, spawn in middle 50% of screen
 };
 
 export function usePhysics(initialItems: PhysicsItemDef[]) {
@@ -55,6 +56,39 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
         // Special handling for back button: position at bottom left
         x = 12; // 0.75rem
         y = containerH - rect.height - 12; // 0.75rem from bottom
+      } else if (def.centerSpawn) {
+        // Spawn in middle 50% of screen (25% to 75%)
+        const minX = containerW * 0.25;
+        const maxX = containerW * 0.75 - rect.width;
+        const minY = containerH * 0.25;
+        const maxY = containerH * 0.75 - rect.height;
+        
+        // Ensure valid bounds
+        const validMinX = Math.max(0, minX);
+        const validMaxX = Math.max(validMinX, maxX);
+        const validMinY = Math.max(0, minY);
+        const validMaxY = Math.max(validMinY, maxY);
+        
+        do {
+          x = validMinX + Math.random() * (validMaxX - validMinX);
+          y = validMinY + Math.random() * (validMaxY - validMinY);
+          // Clamp to ensure it's within bounds
+          x = Math.max(0, Math.min(x, validMaxX));
+          y = Math.max(0, Math.min(y, validMaxY));
+          attempts++;
+          
+          // Check overlap with existing bodies
+          const overlaps = newBodies.some(existing => {
+            return !(
+              x + rect.width < existing.x ||
+              x > existing.x + existing.width ||
+              y + rect.height < existing.y ||
+              y > existing.y + existing.height
+            );
+          });
+          
+          if (!overlaps || attempts >= maxAttempts) break;
+        } while (attempts < maxAttempts);
       } else {
         // Ensure initial position keeps item fully on screen
         const maxX = Math.max(0, containerW - rect.width);

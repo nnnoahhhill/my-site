@@ -18,6 +18,7 @@ const ITEMS_DONE = [
   { id: 'dope', label: 'dope, thanks', mass: 30 },
   { id: 'blurb3', label: 'tell your friends', mass: 20 },
   { id: 'invite', label: 'Invite a Friend', mass: 20 },
+  { id: 'fineprint', label: 'you will not get any confirmation just trust me', mass: 10, small: true },
 ];
 
 export default function CultPage() {
@@ -33,7 +34,19 @@ export default function CultPage() {
   // We switch items based on stage
   const items = stage === 'input' ? ITEMS_INPUT : (stage === 'done' ? ITEMS_DONE : []);
   
+  // Only create physics defs when we have items (not during gif/fade transitions)
   const physicsDefs = useMemo(() => {
+    if (items.length === 0) {
+      // Return minimal stable array during transitions
+      return [{
+        id: 'back-button',
+        label: '←',
+        mass: Infinity,
+        static: true,
+        x: 12,
+        y: undefined,
+      }];
+    }
     const physicsItems: PhysicsItemDef[] = items.map(item => ({
       id: item.id,
       label: item.label || item.id,
@@ -53,28 +66,56 @@ export default function CultPage() {
 
   const { containerRef, registerRef, setHovered } = usePhysics(physicsDefs);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Handle stage transitions after successful submission
+  useEffect(() => {
+    if (submitSuccess) {
+      const gifTimer = setTimeout(() => {
+        setStage('gif');
+      }, 0);
+      
+      const fadeTimer = setTimeout(() => {
+        setStage('fade');
+      }, 4000);
+      
+      const doneTimer = setTimeout(() => {
+        setStage('done');
+        setIsSubmitting(false);
+      }, 6000);
+      
+      return () => {
+        clearTimeout(gifTimer);
+        clearTimeout(fadeTimer);
+        clearTimeout(doneTimer);
+      };
+    }
+  }, [submitSuccess]);
+
   const handleJoin = async () => {
     const isValidEmail = email.includes('@') && email.length > 3;
-    if (!isValidEmail) return;
+    if (!isValidEmail || isSubmitting) return;
+    
+    setIsSubmitting(true);
     
     try {
-      await fetch('/api/cult', {
+      const response = await fetch('/api/cult', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name }),
       });
+      
+      if (response.ok) {
+        setSubmitSuccess(true);
+      } else {
+        console.error('Failed to sign up:', response.statusText);
+        setIsSubmitting(false);
+      }
     } catch (e) {
       console.error('Failed to sign up:', e);
+      setIsSubmitting(false);
     }
-    
-    setStage('gif');
-    // Simulate GIF duration
-    setTimeout(() => {
-      setStage('fade');
-      setTimeout(() => {
-        setStage('done');
-      }, 2000); // 2 seconds fade/empty
-    }, 4000); // 4 seconds GIF?
   };
   
   const handleInvite = () => {
@@ -166,10 +207,13 @@ export default function CultPage() {
       `}</style>
        {items.map(item => {
           let content;
+          const isSmall = (item as any).small;
           if (item.id === 'blurb1' || item.id === 'blurb2') {
             content = <span style={{ fontSize: 'clamp(0.8rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
           } else if (item.id === 'blurb3') {
             content = <span style={{ fontSize: 'clamp(0.6rem, 1.8vw, 0.7rem)' }}>{item.label}</span>;
+          } else if (item.id === 'fineprint') {
+            content = <span style={{ fontSize: 'clamp(0.5rem, 1.5vw, 0.7rem)', opacity: 0.7 }}>{item.label}</span>;
           } else if (item.id === 'name') {
              content = <input 
                type="text"
@@ -189,11 +233,11 @@ export default function CultPage() {
           } else if (item.id === 'join') {
              content = <button 
                onClick={handleJoin} 
-               disabled={!isValidEmail}
+               disabled={!isValidEmail || isSubmitting}
                style={{ 
                  ...joinButtonStyle, 
-                 cursor: isValidEmail ? 'pointer' : 'not-allowed',
-                 opacity: isValidEmail ? 1 : 0.5,
+                 cursor: (isValidEmail && !isSubmitting) ? 'pointer' : 'not-allowed',
+                 opacity: (isValidEmail && !isSubmitting) ? 1 : 0.5,
                  fontWeight: 'bold'
                }}
              >

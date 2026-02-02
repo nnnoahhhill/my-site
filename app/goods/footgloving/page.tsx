@@ -19,7 +19,8 @@ export default function FootGlovingPage() {
     const items: PhysicsItemDef[] = ITEMS.map(item => ({
       id: item.id,
       label: item.label,
-      mass: item.mass, 
+      mass: item.mass,
+      centerSpawn: (item as any).isImage, // Spawn images in middle 50%
     }));
     // Add back button as static physics body
     items.push({
@@ -69,12 +70,12 @@ export default function FootGlovingPage() {
         const imageSrc = (item as any).src;
         const isSmall = (item as any).small;
         
-        // Make larger text segments smaller on mobile
+        // Make all text segments larger and single line
         const fontSize = isSmall 
-          ? '0.7rem' 
+          ? 'clamp(1.2rem, 4vw, 2rem)' 
           : (item.id === 'desc1' || item.id === 'desc2')
-            ? 'clamp(0.9rem, 3vw, 1.2rem)' // Smaller on mobile for larger text segments
-            : 'clamp(1.1rem, 3.5vw, 1.5rem)'; // Slightly larger for other text
+            ? 'clamp(1.5rem, 5vw, 2.5rem)' // Larger font size
+            : 'clamp(1.3rem, 4.5vw, 2.2rem)'; // Larger for other text
         
         return (
           <FloatingItem
@@ -86,7 +87,8 @@ export default function FootGlovingPage() {
             setHovered={setHovered}
             style={{ 
               color: itemColors[item.id],
-              fontSize
+              fontSize,
+              whiteSpace: 'nowrap' // Force single line
             }}
           >
             {isImage && imageSrc ? (

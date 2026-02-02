@@ -58,7 +58,7 @@ export function BackButton({ registerRef }: { registerRef?: (el: HTMLButtonEleme
   }, [registerRef]);
 
   // Don't show on home page (desktop or mobile)
-  if (pathname === '/') {
+  if (!pathname || pathname === '/' || pathname === '') {
     return null;
   }
   
