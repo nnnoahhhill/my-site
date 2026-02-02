@@ -90,7 +90,7 @@ export default function MusicPage() {
             />
           );
         } else if ((item as any).embed === 'spotify') {
-          // Spotify embed - wider on desktop, shrink only on mobile
+          // Spotify embed - wider on desktop, shrink only on mobile, 8px taller than SoundCloud
           content = (
             <iframe
               data-testid="embed-iframe"
@@ -98,13 +98,13 @@ export default function MusicPage() {
                 borderRadius: '12px', 
                 border: 'none',
                 width: 'clamp(200px, 50vw, 440px)',
-                height: 'clamp(152px, 20vw, 176px)',
+                height: 'clamp(141px, 16vw, 141px)',
                 maxWidth: '100%',
                 minWidth: '200px'
               }}
               src={(item as any).url}
               width="440"
-              height="176"
+              height="141"
               frameBorder="0"
               allowFullScreen
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
