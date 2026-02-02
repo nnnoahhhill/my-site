@@ -10,7 +10,6 @@ const ITEMS = [
   { id: 'desc2', label: 'get in touch if you want a pair', mass: 30, href: '/contact' },
   { id: 'desc3', label: 'handmade to order', mass: 15, small: true },
   { id: 'img1', label: 'image', mass: 40, isImage: true, src: '/footglove-big.png' },
-  { id: 'img2', label: 'image2', mass: 40, isImage: true, src: '/footgloves-slay.png' },
 ];
 
 export default function FootGlovingPage() {
