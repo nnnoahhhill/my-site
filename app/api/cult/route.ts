@@ -24,37 +24,11 @@ export async function POST(req: NextRequest) {
       console.log('Cult signup (KV not configured):', entry);
     }
 
-    // Send notification email to your personal email
-    const personalEmail = process.env.PERSONAL_EMAIL || 'nnnoahhhill@gmail.com';
-    await sendEmail({
-      to: personalEmail,
-      subject: `New Cult Signup: ${name || email}`,
-      html: `
-        <h2>New Cult Signup</h2>
-        <p><strong>Name:</strong> ${name || 'Not provided'}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-      `,
-    });
-
     // Send confirmation email to the signup
-    const confirmationSubject = 'u knew i was kidding right';
-    const confirmationBody = '<p>could never leave you hanging like that, of course ima hit you with some confirmation</p>';
-    
     await sendEmail({
       to: email,
-      subject: confirmationSubject,
-      html: confirmationBody,
-    });
-
-    // Send a copy to personal inbox
-    await sendEmail({
-      to: personalEmail,
-      subject: `[Copy] ${confirmationSubject}`,
-      html: `
-        <p><strong>Sent to:</strong> ${email}${name ? ` (${name})` : ''}</p>
-        ${confirmationBody}
-      `,
+      subject: 'u knew i was kidding right',
+      html: '<p>could never leave you hanging like that, of course ima hit you with some confirmation</p>',
     });
 
     return NextResponse.json({ joined: true });
