@@ -19,6 +19,7 @@
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    max-width: 50vw; /* Ensure no text segment is more than 50% viewport width */
   }
 }
 

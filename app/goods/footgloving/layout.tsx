@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const previewImage = `${baseUrl}/api/og-image?preview=${previewIndex}`;
   
   return {
-    title: "contact noah",
+    title: "noah's FootGlovesTM",
     openGraph: {
-      title: "contact noah",
+      title: "noah's FootGlovesTM",
       images: [previewImage],
     },
     twitter: {
@@ -22,6 +22,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function ContactLayout({ children }: { children: React.ReactNode }) {
+export default function FootGlovingLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

@@ -16,11 +16,11 @@ type Props = {
 
 export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered, style, children }: Props) => {
   const [tapped, setTapped] = useState(false);
-  const [splitContent, setSplitContent] = useState<{ line1: string; line2: string; alignLeft: boolean } | null>(null);
+  const [splitContent, setSplitContent] = useState<{ lines: string[] } | null>(null);
   const itemRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
-  // Check if text needs to be split on mobile
+  // Check if text needs to be split on mobile (50% max width constraint)
   useEffect(() => {
     if (typeof window === 'undefined' || window.innerWidth > 768) {
       setSplitContent(null);
@@ -31,62 +31,79 @@ export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered
       return; // Only split text labels, not custom children
     }
     
-    const checkAndSplit = () => {
-      if (!itemRef.current || !label) return;
-      
-      const viewportWidth = window.innerWidth;
-      const threshold = viewportWidth * 0.7;
-      
-      // Get computed style to match actual rendering
-      const computedStyle = window.getComputedStyle(itemRef.current);
-      const fontSize = computedStyle.fontSize || (style?.fontSize ? String(style.fontSize) : '3rem');
-      const fontFamily = computedStyle.fontFamily || 'inherit';
-      const fontWeight = computedStyle.fontWeight || 'bold';
-      
-      // Create a temporary element to measure text width with exact same styling
+    const measureText = (text: string): number => {
       const tempEl = document.createElement('span');
       tempEl.style.position = 'absolute';
       tempEl.style.visibility = 'hidden';
       tempEl.style.whiteSpace = 'nowrap';
-      tempEl.style.fontSize = fontSize;
-      tempEl.style.fontWeight = fontWeight;
-      tempEl.style.fontFamily = fontFamily;
+      const computedStyle = window.getComputedStyle(itemRef.current!);
+      tempEl.style.fontSize = computedStyle.fontSize || (style?.fontSize ? String(style.fontSize) : '3rem');
+      tempEl.style.fontWeight = computedStyle.fontWeight || 'bold';
+      tempEl.style.fontFamily = computedStyle.fontFamily || 'inherit';
       tempEl.style.padding = computedStyle.padding || '0.5rem 1rem';
-      tempEl.textContent = label;
+      tempEl.textContent = text;
       document.body.appendChild(tempEl);
-      
-      const textWidth = tempEl.offsetWidth;
+      const width = tempEl.offsetWidth;
       document.body.removeChild(tempEl);
+      return width;
+    };
+    
+    const checkAndSplit = () => {
+      if (!itemRef.current || !label) return;
       
-      if (textWidth > threshold) {
-        // Split text roughly in half (try to break at word boundary)
-        const words = label.split(' ');
-        if (words.length === 1) {
-          // Single word - split in middle of word
-          const mid = Math.ceil(label.length / 2);
-          const line1 = label.slice(0, mid);
-          const line2 = label.slice(mid);
-          const seed = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const alignLeft = seed % 2 === 0;
-          setSplitContent({ line1, line2, alignLeft });
+      const viewportWidth = window.innerWidth;
+      const maxWidth = viewportWidth * 0.5; // 50% max width
+      
+      const fullWidth = measureText(label);
+      
+      if (fullWidth <= maxWidth) {
+        setSplitContent(null);
+        return;
+      }
+      
+      // Split in half first
+      const words = label.split(' ');
+      let line1: string, line2: string;
+      
+      if (words.length === 1) {
+        // Single word - split in middle
+        const mid = Math.ceil(label.length / 2);
+        line1 = label.slice(0, mid);
+        line2 = label.slice(mid);
+      } else {
+        const midPoint = Math.ceil(words.length / 2);
+        line1 = words.slice(0, midPoint).join(' ');
+        line2 = words.slice(midPoint).join(' ');
+      }
+      
+      // Check if either line is still too wide
+      const line1Width = measureText(line1);
+      const line2Width = measureText(line2);
+      
+      if (line1Width > maxWidth || line2Width > maxWidth) {
+        // Split first part into thirds
+        const firstWords = line1.split(' ');
+        if (firstWords.length === 1) {
+          // Single word - split into thirds
+          const third = Math.ceil(firstWords[0].length / 3);
+          const line1a = firstWords[0].slice(0, third);
+          const line1b = firstWords[0].slice(third, third * 2);
+          const line1c = firstWords[0].slice(third * 2);
+          setSplitContent({ lines: [line1a, line1b, line1c, line2] });
         } else {
-          const midPoint = Math.ceil(words.length / 2);
-          const line1 = words.slice(0, midPoint).join(' ');
-          const line2 = words.slice(midPoint).join(' ');
-          
-          // Randomly decide alignment (use id as seed for consistency)
-          const seed = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const alignLeft = seed % 2 === 0;
-          
-          setSplitContent({ line1, line2, alignLeft });
+          const thirdPoint = Math.ceil(firstWords.length / 3);
+          const line1a = firstWords.slice(0, thirdPoint).join(' ');
+          const line1b = firstWords.slice(thirdPoint, thirdPoint * 2).join(' ');
+          const line1c = firstWords.slice(thirdPoint * 2).join(' ');
+          setSplitContent({ lines: [line1a, line1b, line1c, line2] });
         }
       } else {
-        setSplitContent(null);
+        // Two lines is enough
+        setSplitContent({ lines: [line1, line2] });
       }
     };
     
     // Check after element is positioned (physics system positions elements)
-    // Use multiple attempts to catch element after positioning
     const attempts = [100, 300, 500];
     const timeouts = attempts.map(delay => setTimeout(checkAndSplit, delay));
     
@@ -102,20 +119,20 @@ export const FloatingItem = ({ id, label, href, onClick, registerRef, setHovered
   let content: React.ReactNode = label;
 
   if (splitContent && typeof window !== 'undefined' && window.innerWidth <= 768) {
-    // Render split content with random alignment
+    // Render split content - always left align consecutive lines
     content = (
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
         gap: '0.2rem',
-        width: '100%'
+        width: '100%',
+        textAlign: 'left'
       }}>
-        <div style={{ textAlign: splitContent.alignLeft ? 'left' : 'right' }}>
-          {splitContent.line1}
-        </div>
-        <div style={{ textAlign: splitContent.alignLeft ? 'right' : 'left' }}>
-          {splitContent.line2}
-        </div>
+        {splitContent.lines.map((line, idx) => (
+          <div key={idx} style={{ textAlign: 'left' }}>
+            {line}
+          </div>
+        ))}
       </div>
     );
   } else if (children) {

@@ -76,10 +76,10 @@ export default function AboutPage() {
       const normalized = Math.abs(hash % 1000) / 1000;
       
       // Make all text smaller except "propensity to dream" and "dreams come true"
-      const baseSize = (item as any).larger ? 2.5 : 1.4; // Smaller base sizes for desktop
-      const variation = 0.15; // ±0.15rem variation
+      const baseSize = (item as any).larger ? 2.0 : 1.1; // Even smaller base sizes
+      const variation = 0.1; // ±0.1rem variation
       const offset = (normalized - 0.5) * 2 * variation; // Between -variation and +variation
-      sizes[item.id] = `clamp(${baseSize - variation}rem, 3vw, ${baseSize + variation}rem)`; // Responsive with smaller max
+      sizes[item.id] = `clamp(${baseSize - variation}rem, 2.5vw, ${baseSize + variation}rem)`; // Responsive with smaller max
     });
     return sizes;
   }, []);
@@ -104,7 +104,7 @@ export default function AboutPage() {
         ←
       </div>
       {ITEMS.map(item => {
-        let content = item.label;
+        let content: string | React.ReactNode = item.label;
         if ((item as any).link) {
           // Split the text and underline "hmu"
           const parts = item.label.split('hmu');

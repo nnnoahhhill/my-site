@@ -124,8 +124,8 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
                  value={suggestion.idea} 
                  onChange={e => setSuggestion({...suggestion, idea: e.target.value})}
                  style={{ 
-                   background: 'transparent', 
-                   border: `3px solid #000`, 
+                   background: brightness > 0 ? '#fff' : '#000', 
+                   border: `3px solid ${borderColor}`, 
                    color: textColor, 
                    padding: '0.5rem', 
                    width: 'clamp(200px, 70vw, 400px)', 
@@ -141,8 +141,8 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
                onClick={handleSuggest} 
                disabled={!isValid}
                style={{ 
-                 background: 'transparent', 
-                 border: `3px solid #000`, 
+                 background: brightness > 0 ? '#fff' : '#000', 
+                 border: `3px solid ${borderColor}`, 
                  color: textColor, 
                  padding: '0.5rem',
                  cursor: isValid ? 'pointer' : 'not-allowed',
@@ -155,6 +155,12 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
              </button>
         }
 
+        // Make titles smaller on mobile
+        const isPostItem = item.id.startsWith('post-');
+        const mobileStyle = isPostItem ? {
+          fontSize: 'clamp(1.2rem, 4vw, 2rem)'
+        } : {};
+        
         return (
           <FloatingItem
             key={item.id}
@@ -163,7 +169,10 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
             href={(item as any).href}
             registerRef={registerRef(item.id)}
             setHovered={setHovered}
-            style={style}
+            style={{
+              ...style,
+              ...mobileStyle
+            }}
           >
             {content}
           </FloatingItem>

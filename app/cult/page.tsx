@@ -106,7 +106,7 @@ export default function CultPage() {
   const isValidEmail = email.includes('@') && email.length > 3;
 
   const inputStyle = useMemo(() => ({
-    background: 'transparent',
+    background: brightness > 0 ? '#fff' : '#000',
     border: `3px solid ${borderColor}`,
     color: textColor,
     padding: '0.5rem',
@@ -114,7 +114,7 @@ export default function CultPage() {
     fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const,
     width: 'clamp(200px, 70vw, 300px)',
-  }), [textColor, borderColor]);
+  }), [textColor, borderColor, brightness]);
 
   const emailInputStyle = useMemo(() => ({
     ...inputStyle,

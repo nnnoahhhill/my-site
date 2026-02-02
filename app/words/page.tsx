@@ -1,17 +1,28 @@
 import { getAllPosts } from '@/lib/posts';
 import WordsClient from './WordsClient';
+import { Metadata } from 'next';
+import { headers } from 'next/headers';
 
-export const metadata = {
-  title: 'Words',
-  openGraph: {
-    title: 'Words',
-    images: ['/light.png'],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    images: ['/light.png'],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const host = headersList.get('host') || 'localhost:3000';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const baseUrl = `${protocol}://${host}`;
+  const previewIndex = headersList.get('x-preview-index') || '0';
+  const previewImage = `${baseUrl}/api/og-image?preview=${previewIndex}`;
+  
+  return {
+    title: "noah's words",
+    openGraph: {
+      title: "noah's words",
+      images: [previewImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: [previewImage],
+    },
+  };
+}
 
 export default function WordsPage() {
   const posts = getAllPosts();

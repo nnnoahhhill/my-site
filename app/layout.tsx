@@ -27,10 +27,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const previewImage = `${baseUrl}/api/og-image?preview=${previewIndex}`;
   
   return {
-    title: "Noah Hill",
+    title: "noah's website",
     description: "A modern minimalist personal site",
     openGraph: {
-      title: "Noah Hill",
+      title: "noah's website",
       images: [previewImage],
     },
     twitter: {
