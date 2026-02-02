@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { usePhysics } from '@/hooks/usePhysics';
+import { usePhysics, type PhysicsItemDef } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme } from '@/components/ThemeProvider';
 import type { Post } from '@/lib/posts';
@@ -32,7 +32,7 @@ export default function WordsClient({ posts }: { posts: Post[] }) {
   const allItems = useMemo(() => [...postItems, ...staticItems], [postItems, staticItems]);
 
   const physicsDefs = useMemo(() => {
-    const items = allItems.map(item => ({
+    const items: PhysicsItemDef[] = allItems.map(item => ({
       id: item.id,
       label: (item as any).label || item.id,
       mass: item.mass

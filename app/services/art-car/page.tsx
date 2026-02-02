@@ -1,6 +1,6 @@
 'use client';
 
-import { usePhysics } from '@/hooks/usePhysics';
+import { usePhysics, type PhysicsItemDef } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
@@ -22,7 +22,7 @@ export default function ArtCarPage() {
 
   // Make movement barely noticeable - very slow speed and high mass
   const physicsDefs = useMemo(() => {
-    const items = ITEMS.map(item => ({
+    const items: PhysicsItemDef[] = ITEMS.map(item => ({
       id: item.id,
       label: item.label,
       mass: (item.mass || 20) * 10, // 10x mass to slow movement significantly

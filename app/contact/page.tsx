@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { usePhysics } from '@/hooks/usePhysics';
+import { usePhysics, type PhysicsItemDef } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -37,7 +37,7 @@ export default function ContactPage() {
     formData.message.length > 0;
 
   const physicsDefs = useMemo(() => {
-    const items = ITEMS.map(item => ({
+    const items: PhysicsItemDef[] = ITEMS.map(item => ({
       id: item.id,
       label: item.label || item.id,
       mass: item.mass

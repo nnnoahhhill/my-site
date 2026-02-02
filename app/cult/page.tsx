@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { usePhysics } from '@/hooks/usePhysics';
+import { usePhysics, type PhysicsItemDef } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -34,7 +34,7 @@ export default function CultPage() {
   const items = stage === 'input' ? ITEMS_INPUT : (stage === 'done' ? ITEMS_DONE : []);
   
   const physicsDefs = useMemo(() => {
-    const physicsItems = items.map(item => ({
+    const physicsItems: PhysicsItemDef[] = items.map(item => ({
       id: item.id,
       label: item.label || item.id,
       mass: item.mass

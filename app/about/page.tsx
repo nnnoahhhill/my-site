@@ -1,6 +1,6 @@
 'use client';
 
-import { usePhysics } from '@/hooks/usePhysics';
+import { usePhysics, type PhysicsItemDef } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
@@ -30,7 +30,7 @@ export default function AboutPage() {
 
   // Increase mass significantly and reduce speed to slow down movement
   const physicsDefs = useMemo(() => {
-    const items = ITEMS.map(item => ({
+    const items: PhysicsItemDef[] = ITEMS.map(item => ({
       id: item.id,
       label: item.label,
       mass: (item.mass || 20) * 5, // 5x the mass to slow movement significantly

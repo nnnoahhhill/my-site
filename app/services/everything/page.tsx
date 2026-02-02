@@ -1,6 +1,6 @@
 'use client';
 
-import { usePhysics } from '@/hooks/usePhysics';
+import { usePhysics, type PhysicsItemDef } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
@@ -11,7 +11,7 @@ export default function EverythingPage() {
   const { randomMode, getColorFromHomePalette } = useTheme();
 
   const physicsDefs = useMemo(() => {
-    const items = ITEMS.map(item => ({
+    const items: PhysicsItemDef[] = ITEMS.map(item => ({
       id: item.id,
       label: item.label,
       mass: item.mass, 
