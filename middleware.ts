@@ -42,11 +42,23 @@ export async function middleware(req: NextRequest) {
     console.error("KV Error", e);
   }
   
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+
+  // Add caching headers for better performance
+  // Cache static assets and pages for 1 hour, revalidate in background
+  if (req.nextUrl.pathname.startsWith('/_next/static') || 
+      req.nextUrl.pathname.startsWith('/api/og-image')) {
+    response.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  } else if (!req.nextUrl.pathname.startsWith('/api')) {
+    // Cache pages for 5 minutes, allow stale content for 1 hour
+    response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+  }
+
+  return response;
 }
 
 export const config = {

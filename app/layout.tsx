@@ -40,6 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+// Enable static generation with revalidation for better caching
+export const revalidate = 300; // Revalidate every 5 minutes
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const isPunished = headersList.get('x-is-punished') === 'true';

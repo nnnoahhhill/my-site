@@ -4,6 +4,7 @@ import { usePhysics, type PhysicsItemDef } from '@/hooks/usePhysics';
 import { FloatingItem } from '@/components/FloatingItem';
 import { useTheme } from '@/components/ThemeProvider';
 import { useMemo } from 'react';
+import Link from 'next/link';
 
 const ITEMS = [
   { id: 'p1', label: 'Forbes 30u30 Manufacturing & Industry', mass: 35 },
@@ -23,6 +24,7 @@ const ITEMS = [
   { id: 'p15', label: 'founded multiple tech startups', mass: 30 },
   { id: 'p16', label: 'global supply chain management', mass: 35 },
   { id: 'p17', label: 'advanced manufacturing and scalable design', mass: 40 },
+  { id: 'p18', label: 'if ur obsessed with me and need more hmu', mass: 25, link: true },
 ];
 
 export default function AboutPage() {
@@ -101,19 +103,36 @@ export default function AboutPage() {
       >
         ←
       </div>
-      {ITEMS.map(item => (
-        <FloatingItem
-          key={item.id}
-          id={item.id}
-          label={item.label}
-          registerRef={registerRef(item.id)}
-          setHovered={setHovered}
-          style={{ 
-            color: itemColors[item.id],
-            fontSize: fontSizes[item.id]
-          }}
-        />
-      ))}
+      {ITEMS.map(item => {
+        let content = item.label;
+        if ((item as any).link) {
+          // Split the text and underline "hmu"
+          const parts = item.label.split('hmu');
+          content = (
+            <>
+              {parts[0]}
+              <Link href="/contact" style={{ textDecoration: 'underline' }}>hmu</Link>
+              {parts[1]}
+            </>
+          );
+        }
+        
+        return (
+          <FloatingItem
+            key={item.id}
+            id={item.id}
+            label={item.label}
+            registerRef={registerRef(item.id)}
+            setHovered={setHovered}
+            style={{ 
+              color: itemColors[item.id],
+              fontSize: fontSizes[item.id]
+            }}
+          >
+            {content}
+          </FloatingItem>
+        );
+      })}
     </main>
   );
 }
