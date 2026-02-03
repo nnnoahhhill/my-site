@@ -271,7 +271,7 @@ function CheckoutForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           shippingOption,
-          couponCode: couponCode.trim().toUpperCase() || undefined,
+          couponCode: couponCode.trim() || undefined,
         }),
       });
 
@@ -470,7 +470,7 @@ function CheckoutForm() {
               placeholder="Promo Code"
               style={{...inputStyle, flex: 1, minWidth: 0}}
               value={couponCode}
-              onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                  onChange={e => setCouponCode(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
             />
             <button
@@ -703,7 +703,7 @@ function CheckoutForm() {
                 placeholder="Promo Code"
                 style={{...inputStyle, flex: 1, minWidth: 0}}
                 value={couponCode}
-                onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                  onChange={e => setCouponCode(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
               />
               <button
