@@ -152,7 +152,7 @@ function CheckoutForm() {
             customerEmail,
             customerName,
             shippingAddress: {
-              address: ev.shippingAddress?.line1 || formData.address,
+              address: (ev.shippingAddress as any)?.line1 || formData.address,
               city: ev.shippingAddress?.city || formData.city,
               state: ev.shippingAddress?.state || formData.state,
               zip: ev.shippingAddress?.postal_code || formData.zip,
