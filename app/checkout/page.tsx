@@ -367,8 +367,198 @@ function CheckoutForm() {
     autocomplete: 'cc-number',
   };
 
+  // On mobile, use a simpler stacked layout without physics to ensure everything is visible
+  const isMobileView = typeof window !== 'undefined' && window.innerWidth <= 768;
+  
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+    <main 
+      ref={containerRef} 
+      style={{ 
+        width: '100%', 
+        height: '100vh', 
+        position: 'relative', 
+        overflow: isMobileView ? 'auto' : 'hidden',
+        padding: isMobileView ? '20px 24px' : '0',
+        boxSizing: 'border-box',
+      }}
+    >
+      {isMobileView ? (
+        // Mobile: Simple stacked layout, no physics
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '16px',
+          paddingBottom: '40px',
+        }}>
+          {/* Name and State row */}
+          <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+            <input
+              type="text"
+              placeholder="Name"
+              autoComplete="name"
+              style={{...inputStyle, flex: 1}}
+              value={formData.name}
+              onChange={e => setFormData({...formData, name: e.target.value})}
+            />
+            <input
+              type="text"
+              placeholder="State"
+              autoComplete="address-level1"
+              style={{...inputStyle, width: '120px', flexShrink: 0}}
+              value={formData.state}
+              onChange={e => setFormData({...formData, state: e.target.value})}
+            />
+          </div>
+          
+          {/* Email */}
+          <input
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            style={inputStyle}
+            value={formData.email}
+            onChange={e => setFormData({...formData, email: e.target.value})}
+          />
+          
+          {/* Address, City, ZIP row */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <input
+              type="text"
+              placeholder="Street Address"
+              autoComplete="street-address"
+              style={inputStyle}
+              value={formData.address}
+              onChange={e => setFormData({...formData, address: e.target.value})}
+            />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <input
+                type="text"
+                placeholder="City"
+                autoComplete="address-level2"
+                style={{...inputStyle, flex: 1}}
+                value={formData.city}
+                onChange={e => setFormData({...formData, city: e.target.value})}
+              />
+              <input
+                type="text"
+                placeholder="ZIP"
+                autoComplete="postal-code"
+                style={{...inputStyle, width: '100px', flexShrink: 0}}
+                value={formData.zip}
+                onChange={e => setFormData({...formData, zip: e.target.value})}
+              />
+            </div>
+          </div>
+          
+          {/* Shipping */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.9rem', color: textColor }}>Shipping:</label>
+            <select
+              value={shippingOption}
+              onChange={e => setShippingOption(e.target.value as any)}
+              style={{...inputStyle, cursor: 'pointer'}}
+            >
+              <option value="standard">Standard (2 weeks) - Free</option>
+              <option value="express">Express (2 weeks) - +$10</option>
+              <option value="rush">Rush (3 days) - +$25</option>
+            </select>
+          </div>
+          
+          {/* Coupon */}
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <input
+              type="text"
+              placeholder="Promo Code"
+              style={{...inputStyle, flex: 1, minWidth: 0}}
+              value={couponCode}
+              onChange={e => setCouponCode(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
+            />
+            <button
+              onClick={handleCouponApply}
+              disabled={!couponCode.trim()}
+              style={{
+                ...inputStyle,
+                cursor: couponCode.trim() ? 'pointer' : 'not-allowed',
+                opacity: couponCode.trim() ? 1 : 0.5,
+                width: 'auto',
+                padding: '0.5rem 1rem',
+                flexShrink: 0,
+              }}
+            >
+              Apply
+            </button>
+          </div>
+          
+          {/* Summary */}
+          <div style={{ fontSize: '0.9rem', padding: '12px', border: `2px solid ${borderColor}` }}>
+            <div style={{ marginBottom: '0.5rem' }}>Footglove: ${BASE_PRICE}</div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              Shipping: {shippingOption === 'standard' ? 'Free' : shippingOption === 'express' ? `+$${EXPRESS_SHIPPING}` : `+$${RUSH_SHIPPING}`}
+            </div>
+            {discount > 0 && (
+              <div style={{ marginBottom: '0.5rem', color: '#00aa00' }}>
+                Discount: -${discount.toFixed(2)}
+              </div>
+            )}
+            <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+              Total: ${total.toFixed(2)}
+            </div>
+          </div>
+          
+          {/* Wallet button */}
+          {walletAvailable && paymentRequest && (
+            <div style={{ width: '100%' }}>
+              <PaymentRequestButtonElement
+                options={{
+                  paymentRequest,
+                  style: {
+                    paymentRequestButton: {
+                      theme: brightness > 0 ? 'light' : 'dark',
+                      height: '48px',
+                      type: 'default',
+                    },
+                  },
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Card input */}
+          <div style={{ width: '100%' }}>
+            {walletAvailable && (
+              <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: textColor }}>
+                or enter card details:
+              </div>
+            )}
+            <div style={{ width: '100%' }}>
+              <CardElement
+                options={cardElementOptions}
+                onChange={(e) => setCardComplete(e.complete)}
+              />
+            </div>
+          </div>
+          
+          {/* Pay button */}
+          <button
+            disabled={!isValid || processing}
+            onClick={handleSubmit}
+            style={{
+              ...inputStyle,
+              cursor: isValid && !processing ? 'pointer' : 'not-allowed',
+              opacity: isValid && !processing ? 1 : 0.5,
+              fontWeight: 'bold',
+              width: '100%',
+              padding: '1rem',
+              fontSize: '1.1rem',
+            }}
+          >
+            {processing ? 'Processing...' : `Pay $${total.toFixed(2)}`}
+          </button>
+        </div>
+      ) : (
+        // Desktop: Original physics-based layout
+        <>
       <div
         ref={registerRef('back-button')}
         style={{
@@ -612,12 +802,12 @@ function CheckoutForm() {
             {content}
           </FloatingItem>
         );
-          })}
-        </>
+      })}
+      </>
       )}
-        </main>
-      );
-    }
+    </main>
+  );
+}
 
 export default function CheckoutPage() {
   if (!stripePromise) {

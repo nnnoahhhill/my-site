@@ -360,8 +360,192 @@ function CheckoutForm() {
     autocomplete: 'cc-number',
   };
 
+  // On mobile, use a simpler stacked layout without physics to ensure everything is visible
+  const isMobileView = typeof window !== 'undefined' && window.innerWidth <= 768;
+  
   return (
-    <main ref={containerRef} style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+    <main 
+      ref={containerRef} 
+      style={{ 
+        width: '100%', 
+        height: '100vh', 
+        position: 'relative', 
+        overflow: isMobileView ? 'auto' : 'hidden',
+        padding: isMobileView ? '20px 24px' : '0',
+        boxSizing: 'border-box',
+      }}
+    >
+      {isMobileView ? (
+        // Mobile: Simple stacked layout, no physics
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '16px',
+          paddingBottom: '40px',
+        }}>
+          {/* Name and State row */}
+          <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+            <input
+              type="text"
+              placeholder="Name"
+              autoComplete="name"
+              style={{...inputStyle, flex: 1}}
+              value={formData.name}
+              onChange={e => setFormData({...formData, name: e.target.value})}
+            />
+            <input
+              type="text"
+              placeholder="State"
+              autoComplete="address-level1"
+              style={{...inputStyle, width: '120px', flexShrink: 0}}
+              value={formData.state}
+              onChange={e => setFormData({...formData, state: e.target.value})}
+            />
+          </div>
+          
+          {/* Email */}
+          <input
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            style={inputStyle}
+            value={formData.email}
+            onChange={e => setFormData({...formData, email: e.target.value})}
+          />
+          
+          {/* Address, City, ZIP row */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <input
+              type="text"
+              placeholder="Street Address"
+              autoComplete="street-address"
+              style={inputStyle}
+              value={formData.address}
+              onChange={e => setFormData({...formData, address: e.target.value})}
+            />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <input
+                type="text"
+                placeholder="City"
+                autoComplete="address-level2"
+                style={{...inputStyle, flex: 1}}
+                value={formData.city}
+                onChange={e => setFormData({...formData, city: e.target.value})}
+              />
+              <input
+                type="text"
+                placeholder="ZIP"
+                autoComplete="postal-code"
+                style={{...inputStyle, width: '100px', flexShrink: 0}}
+                value={formData.zip}
+                onChange={e => setFormData({...formData, zip: e.target.value})}
+              />
+            </div>
+          </div>
+          
+          {/* Desc items */}
+          {ITEMS.filter(item => item.id === 'desc1' || item.id === 'desc2' || item.id === 'desc3').map(item => {
+            const descItem = ITEMS.find(i => i.id === item.id);
+            const label = (descItem as any)?.label || item.id;
+            return (
+              <div key={item.id} style={{ fontSize: '0.9rem', color: textColor }}>
+                {label}
+              </div>
+            );
+          })}
+          
+          {/* Coupon */}
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <input
+              type="text"
+              placeholder="Promo Code"
+              style={{...inputStyle, flex: 1, minWidth: 0}}
+              value={couponCode}
+              onChange={e => setCouponCode(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
+            />
+            <button
+              onClick={handleCouponApply}
+              disabled={!couponCode.trim()}
+              style={{
+                ...inputStyle,
+                cursor: couponCode.trim() ? 'pointer' : 'not-allowed',
+                opacity: couponCode.trim() ? 1 : 0.5,
+                width: 'auto',
+                padding: '0.5rem 1rem',
+                flexShrink: 0,
+              }}
+            >
+              Apply
+            </button>
+          </div>
+          
+          {/* Summary */}
+          <div style={{ fontSize: '0.9rem', padding: '12px', border: `2px solid ${borderColor}` }}>
+            <div style={{ marginBottom: '0.5rem' }}>Art Car Commission: ${BASE_PRICE.toLocaleString()}</div>
+            {discount > 0 && (
+              <div style={{ marginBottom: '0.5rem', color: '#00aa00' }}>
+                Discount: -${discount.toLocaleString()}
+              </div>
+            )}
+            <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+              Total: ${total.toLocaleString()}
+            </div>
+          </div>
+          
+          {/* Wallet button */}
+          {walletAvailable && paymentRequest && (
+            <div style={{ width: '100%' }}>
+              <PaymentRequestButtonElement
+                options={{
+                  paymentRequest,
+                  style: {
+                    paymentRequestButton: {
+                      theme: brightness > 0 ? 'light' : 'dark',
+                      height: '48px',
+                      type: 'default',
+                    },
+                  },
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Card input */}
+          <div style={{ width: '100%' }}>
+            {walletAvailable && (
+              <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: textColor }}>
+                or enter card details:
+              </div>
+            )}
+            <div style={{ width: '100%' }}>
+              <CardElement
+                options={cardElementOptions}
+                onChange={(e) => setCardComplete(e.complete)}
+              />
+            </div>
+          </div>
+          
+          {/* Pay button */}
+          <button
+            disabled={!isValid || processing}
+            onClick={handleSubmit}
+            style={{
+              ...inputStyle,
+              cursor: isValid && !processing ? 'pointer' : 'not-allowed',
+              opacity: isValid && !processing ? 1 : 0.5,
+              fontWeight: 'bold',
+              width: '100%',
+              padding: '1rem',
+              fontSize: '1.1rem',
+            }}
+          >
+            {processing ? 'Processing...' : `Pay $${total.toLocaleString()}`}
+          </button>
+        </div>
+      ) : (
+        // Desktop: Original physics-based layout
+        <>
       <div
         ref={registerRef('back-button')}
         style={{
