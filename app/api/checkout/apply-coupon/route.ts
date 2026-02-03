@@ -68,18 +68,37 @@ export async function POST(req: NextRequest) {
         code: trimmedCode,
         limit: 100,
         active: true,
+        expand: ['data.coupon'], // Expand coupon in list results
       });
 
       console.log('Found promotion codes:', promotionCodes.data.length);
+      if (promotionCodes.data.length > 0) {
+        console.log('Promotion codes found:', promotionCodes.data.map(pc => ({ id: pc.id, code: pc.code, active: pc.active })));
+      }
 
       if (promotionCodes.data.length === 0) {
         console.error('No promotion codes found for:', trimmedCode);
-        return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
+        // Try case-insensitive search by listing all and filtering
+        const allPromoCodes = await stripe.promotionCodes.list({
+          limit: 100,
+          active: true,
+          expand: ['data.coupon'],
+        });
+        const caseInsensitiveMatch = allPromoCodes.data.find(
+          pc => pc.code.toLowerCase() === trimmedCode.toLowerCase()
+        );
+        if (caseInsensitiveMatch) {
+          console.log('Found case-insensitive match:', caseInsensitiveMatch.id, caseInsensitiveMatch.code);
+          promotionCode = caseInsensitiveMatch;
+        } else {
+          console.error('No promotion codes found (case-insensitive search also failed)');
+          return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
+        }
+      } else {
+        // Get the first match (should be exact since Stripe handles case-insensitivity)
+        promotionCode = promotionCodes.data[0];
+        console.log('Using promotion code:', promotionCode.id, promotionCode.code);
       }
-
-      // Get the first match (should be exact since Stripe handles case-insensitivity)
-      promotionCode = promotionCodes.data[0];
-      console.log('Using promotion code:', promotionCode.id, promotionCode.code);
     }
     
     // Check if promotion code is active
@@ -88,17 +107,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'This promotion code is not active' }, { status: 400 });
     }
     
+    // Get coupon - it might be expanded already or just an ID
+    let coupon;
     const couponId = (promotionCode as any).coupon;
     
     if (!couponId) {
       console.error('No coupon ID found for promotion code:', promotionCode.id);
+      console.error('Promotion code object:', JSON.stringify(promotionCode, null, 2));
       return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
     }
     
-    console.log('Retrieving coupon:', couponId);
-    const coupon = typeof couponId === 'string' 
-      ? await stripe.coupons.retrieve(couponId)
-      : couponId;
+    console.log('Coupon ID type:', typeof couponId, 'value:', couponId);
+    
+    if (typeof couponId === 'string') {
+      console.log('Retrieving coupon by ID:', couponId);
+      try {
+        coupon = await stripe.coupons.retrieve(couponId);
+      } catch (error: any) {
+        console.error('Error retrieving coupon:', error.message);
+        return NextResponse.json({ error: 'Failed to retrieve coupon' }, { status: 400 });
+      }
+    } else {
+      // Already expanded
+      coupon = couponId;
+      console.log('Using expanded coupon:', coupon.id);
+    }
 
     if (!coupon) {
       console.error('Coupon not found:', couponId);
