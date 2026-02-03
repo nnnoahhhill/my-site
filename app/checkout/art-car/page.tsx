@@ -768,11 +768,11 @@ function CheckoutForm() {
           </FloatingItem>
         );
           })}
-        </>
+      </>
       )}
-        </main>
-      );
-    }
+    </main>
+  );
+}
 
 export default function ArtCarCheckoutPage() {
   if (!stripePromise) {
