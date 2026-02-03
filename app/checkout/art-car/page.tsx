@@ -107,6 +107,7 @@ function CheckoutForm() {
     const mobileXPadding = 24; // Increased padding to prevent overflow
     
     // Define mobile order: name, email, address, city, state, zip, desc1, desc2, desc3, coupon, summary, wallet, card, pay
+    // Make sure all fields have mobileOrder so they're visible on mobile
     const mobileOrderMap: Record<string, number> = {
       'name': 1,
       'email': 2,
@@ -127,13 +128,20 @@ function CheckoutForm() {
     const items: PhysicsItemDef[] = ITEMS.map(item => {
       const baseDef: PhysicsItemDef = {
         id: item.id,
-        label: item.label || item.id,
+        label: (item as any).label || item.id,
         mass: item.mass
       };
       
-      if (isMobile && mobileOrderMap[item.id] !== undefined) {
-        baseDef.mobileOrder = mobileOrderMap[item.id];
-        baseDef.mobileX = mobileXPadding;
+      // Always set mobileOrder for mobile, even if not explicitly in map (fallback to 999)
+      if (isMobile) {
+        if (mobileOrderMap[item.id] !== undefined) {
+          baseDef.mobileOrder = mobileOrderMap[item.id];
+          baseDef.mobileX = mobileXPadding;
+        } else {
+          // Fallback for any items not in the map
+          baseDef.mobileOrder = 999;
+          baseDef.mobileX = mobileXPadding;
+        }
       }
       
       return baseDef;
@@ -470,7 +478,9 @@ function CheckoutForm() {
             />
           );
         } else if (item.id === 'desc1' || item.id === 'desc2' || item.id === 'desc3') {
-          content = <span style={{ fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
+          const descItem = ITEMS.find(i => i.id === item.id);
+          const label = (descItem as any)?.label || item.id;
+          content = <span style={{ fontSize: isMobile ? '0.9rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)', whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: isMobile ? 'calc(100vw - 48px)' : 'auto' }}>{label}</span>;
         } else if (item.id === 'coupon') {
           content = (
             <div style={{ display: 'flex', gap: '0.5rem', width: isMobile ? 'calc(100vw - 48px)' : 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end', boxSizing: 'border-box' }}>
