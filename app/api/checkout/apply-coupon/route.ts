@@ -136,7 +136,6 @@ export async function POST(req: NextRequest) {
     } else {
       return NextResponse.json({ error: 'Invalid coupon configuration' }, { status: 400 });
     }
-
     // Ensure discount doesn't exceed subtotal
     discountAmount = Math.min(discountAmount, subtotal);
 
