@@ -97,8 +97,33 @@ export async function POST(req: NextRequest) {
           console.log('Found case-insensitive match:', caseInsensitiveMatch.id, caseInsensitiveMatch.code);
           promotionCode = caseInsensitiveMatch;
         } else {
-          console.error('No promotion codes found (case-insensitive search also failed)');
-          return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
+          // Last resort: try if it's a coupon ID (not a promotion code)
+          console.log('Trying as coupon ID:', trimmedCode);
+          try {
+            const coupon = await stripe.coupons.retrieve(trimmedCode);
+            // Find a promotion code that uses this coupon
+            const promoCodesForCoupon = await stripe.promotionCodes.list({
+              limit: 100,
+              active: true,
+              expand: ['data.coupon'],
+            });
+            const promoWithCoupon = promoCodesForCoupon.data.find(
+              pc => {
+                const pcCoupon = (pc as any).coupon;
+                return (pcCoupon?.id === coupon.id) || (typeof pcCoupon === 'string' && pcCoupon === coupon.id);
+              }
+            );
+            if (promoWithCoupon) {
+              console.log('Found promotion code via coupon ID:', promoWithCoupon.id, promoWithCoupon.code);
+              promotionCode = promoWithCoupon;
+            } else {
+              console.error('No promotion codes found (case-insensitive search and coupon ID search also failed)');
+              return NextResponse.json({ error: 'Invalid coupon code. Please use the promotion code (e.g., YEPTHATSRIGHTENTIRELYFREENICE) or promotion code ID (promo_xxx)' }, { status: 400 });
+            }
+          } catch (couponError) {
+            console.error('No promotion codes found (all searches failed)');
+            return NextResponse.json({ error: 'Invalid coupon code. Please use the promotion code (e.g., YEPTHATSRIGHTENTIRELYFREENICE) or promotion code ID (promo_xxx)' }, { status: 400 });
+          }
         }
       } else {
         // Get the first match (should be exact since Stripe handles case-insensitivity)
