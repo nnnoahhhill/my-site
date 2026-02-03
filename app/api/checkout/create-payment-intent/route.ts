@@ -51,31 +51,52 @@ export async function POST(req: NextRequest) {
     if (couponCode) {
       try {
         // Look up promotion code in Stripe
-        // Promotion codes are case-insensitive per Stripe docs
-        const normalizedCode = couponCode.trim().toUpperCase();
+        // Support both customer-facing codes and promotion code IDs (promo_xxx)
+        const trimmedCode = couponCode.trim();
+        let promotionCode;
         
-        let promotionCodes = await stripe.promotionCodes.list({
-          code: normalizedCode,
-          limit: 100,
-          active: true,
-        });
-
-        // If not found with uppercase, try original case
-        if (promotionCodes.data.length === 0) {
-          promotionCodes = await stripe.promotionCodes.list({
-            code: couponCode.trim(),
+        // If it looks like a promotion code ID (starts with promo_), retrieve by ID
+        if (trimmedCode.startsWith('promo_')) {
+          try {
+            promotionCode = await stripe.promotionCodes.retrieve(trimmedCode);
+            if (!promotionCode.active) {
+              // Skip if not active, but don't error - just continue without discount
+              promotionCode = null;
+            }
+          } catch (error) {
+            // Skip if invalid, but don't error - just continue without discount
+            promotionCode = null;
+          }
+        } else {
+          // Look up by customer-facing code (case-insensitive)
+          const normalizedCode = trimmedCode.toUpperCase();
+          
+          let promotionCodes = await stripe.promotionCodes.list({
+            code: normalizedCode,
             limit: 100,
             active: true,
           });
+
+          // If not found with uppercase, try original case
+          if (promotionCodes.data.length === 0) {
+            promotionCodes = await stripe.promotionCodes.list({
+              code: trimmedCode,
+              limit: 100,
+              active: true,
+            });
+          }
+
+          // Find exact match (case-insensitive comparison)
+          const exactMatch = promotionCodes.data.find(
+            pc => pc.code.trim().toUpperCase() === normalizedCode
+          );
+
+          if (exactMatch && exactMatch.active) {
+            promotionCode = exactMatch;
+          }
         }
 
-        // Find exact match (case-insensitive comparison)
-        const exactMatch = promotionCodes.data.find(
-          pc => pc.code.trim().toUpperCase() === normalizedCode
-        );
-
-        if (exactMatch && exactMatch.active) {
-          const promotionCode = exactMatch;
+        if (promotionCode) {
           const couponId = (promotionCode as any).coupon;
           let coupon;
           if (typeof couponId === 'string') {
