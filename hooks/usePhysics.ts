@@ -62,8 +62,8 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
 
       // Process mobile items first to calculate stacked positions
       let mobileYOffset = 20; // Start 20px from top
-      const mobileXPadding = 16; // 16px padding on sides
-      const mobileItemGap = 12; // 12px gap between items
+      const mobileXPadding = 24; // 24px padding on sides (more padding to prevent overflow)
+      const mobileItemGap = 16; // 16px gap between items
 
       mobileItems.forEach(({ def, rect }) => {
         const baseMass = 10;
@@ -74,8 +74,13 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
         if (def.mobileX !== undefined) {
           x = def.mobileX;
         } else {
-          // Center horizontally with padding
+          // Center horizontally with padding, ensure it fits
           x = mobileXPadding;
+          // Ensure element doesn't overflow
+          const maxWidth = containerW - (mobileXPadding * 2);
+          if (rect.width > maxWidth) {
+            // Element is too wide, we'll need to constrain it via CSS
+          }
         }
 
         if (def.mobileY !== undefined) {

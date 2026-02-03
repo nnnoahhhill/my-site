@@ -104,7 +104,7 @@ function CheckoutForm() {
 
   const physicsDefs = useMemo(() => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-    const mobileXPadding = 16;
+    const mobileXPadding = 24; // Increased padding to prevent overflow
     
     // Define mobile order: name, email, address, city, state, zip, desc1, desc2, desc3, coupon, summary, wallet, card, pay
     const mobileOrderMap: Record<string, number> = {
@@ -326,10 +326,11 @@ function CheckoutForm() {
     color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
-    fontSize: isMobile ? '1rem' : 'clamp(0.8rem, 2.5vw, 1rem)',
+    fontSize: isMobile ? '0.9rem' : 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const,
-    width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)',
-    maxWidth: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)',
+    width: isMobile ? 'calc(100vw - 48px)' : 'clamp(200px, 70vw, 300px)',
+    maxWidth: isMobile ? 'calc(100vw - 48px)' : 'clamp(200px, 70vw, 300px)',
+    boxSizing: 'border-box' as const,
   };
 
   const cardElementOptions = {
