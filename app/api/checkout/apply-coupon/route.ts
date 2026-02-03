@@ -27,18 +27,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
     }
 
-    // Look up promotion code in Stripe
-    const promotionCodes = await stripe.promotionCodes.list({
+    // Look up promotion code in Stripe - try both uppercase and original case
+    let promotionCodes = await stripe.promotionCodes.list({
       code: couponCode.toUpperCase(),
-      limit: 1,
-      expand: ['data.coupon'],
+      limit: 10, // Get more results to check
     });
 
+    // If not found, try original case
     if (promotionCodes.data.length === 0) {
+      promotionCodes = await stripe.promotionCodes.list({
+        code: couponCode,
+        limit: 10,
+      });
+    }
+
+    // If still not found, try lowercase
+    if (promotionCodes.data.length === 0) {
+      promotionCodes = await stripe.promotionCodes.list({
+        code: couponCode.toLowerCase(),
+        limit: 10,
+      });
+    }
+
+    // Find exact match (case-insensitive)
+    const exactMatch = promotionCodes.data.find(
+      pc => pc.code.toLowerCase() === couponCode.toLowerCase()
+    );
+
+    if (!exactMatch) {
       return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
     }
 
-    const promotionCode = promotionCodes.data[0];
+    const promotionCode = exactMatch;
     const couponId = (promotionCode as any).coupon;
     
     if (!couponId) {

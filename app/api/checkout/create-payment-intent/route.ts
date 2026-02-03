@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
             // Check if coupon is valid
             if (coupon && coupon.valid !== false) {
               // Check redemption limits
-              const timesRedeemed = (promotionCode as any).times_redeemed || 0;
+              const timesRedeemed = promotionCode.times_redeemed || 0;
               if (!coupon.max_redemptions || timesRedeemed < coupon.max_redemptions) {
                 let discountAmount: number;
                 if (coupon.percent_off) {
@@ -81,11 +81,12 @@ export async function POST(req: NextRequest) {
                 }
                 
                 amount = Math.max(0, amount - discountAmount);
-                metadata.couponCode = couponCode.toUpperCase();
+                metadata.couponCode = promotionCode.code; // Use the actual code from Stripe
                 metadata.promotionCodeId = promotionCode.id;
               }
             }
           }
+        }
         }
       } catch (error) {
         console.error('Error applying coupon:', error);
