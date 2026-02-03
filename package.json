@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.6.0",
+    "@stripe/stripe-js": "^8.7.0",
     "@vercel/kv": "^3.0.0",
     "gray-matter": "^4.0.3",
     "next": "^15.5.11",
@@ -16,7 +18,8 @@
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
     "remark-breaks": "^4.0.0",
-    "resend": "^6.9.1"
+    "resend": "^6.9.1",
+    "stripe": "^20.3.0"
   },
   "devDependencies": {
     "@types/node": "^20",

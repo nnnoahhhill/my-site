@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const previewImage = `${baseUrl}/api/og-image?preview=${previewIndex}`;
   
   return {
-    title: "noah's FootGloves™",
+    title: "buy them",
     openGraph: {
-      title: "noah's FootGloves™",
+      title: "buy them",
       images: [previewImage],
     },
     twitter: {

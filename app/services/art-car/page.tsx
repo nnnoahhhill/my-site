@@ -7,14 +7,15 @@ import { useMemo } from 'react';
 
 const ITEMS = [
   { id: 'title', label: 'cool as fuck art car', mass: 40 },
-  { id: 'price', label: '$20,000', mass: 30 },
-  { id: 'desc1', label: 'With $20k I could build a really really cool art car playa ready', mass: 25 },
+  { id: 'price', label: '$28,500', mass: 30 },
+  { id: 'desc1', label: 'With $28,500 I could build a really really cool art car playa ready', mass: 25 },
   { id: 'desc2', label: 'with soundsystem to fit 4-8 people', mass: 20 },
   { id: 'desc3', label: 'and I\'ll help you get approved', mass: 15 },
   { id: 'desc4', label: 'transport it there', mass: 10 },
   { id: 'desc5', label: 'train you how to ride it', mass: 15 },
   { id: 'desc6', label: 'be on call for problems during the burn', mass: 25 },
   { id: 'desc7', label: 'I have my own ideas but I\'m happy to bring your vision to life as well', mass: 30 },
+  { id: 'checkout', label: 'commission ur very own art car', mass: 30, href: '/checkout/art-car' },
 ];
 
 export default function ArtCarPage() {
@@ -76,6 +77,7 @@ export default function ArtCarPage() {
           key={item.id}
           id={item.id}
           label={item.label}
+          href={(item as any).href}
           registerRef={registerRef(item.id)}
           setHovered={setHovered}
           style={{ 

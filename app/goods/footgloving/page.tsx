@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 
 const ITEMS = [
   { id: 'desc1', label: 'light gloving but with toe socks', mass: 30 },
-  { id: 'desc2', label: 'get in touch if you want a pair', mass: 30, href: '/contact' },
+  { id: 'desc2', label: 'buy them', mass: 30, href: '/checkout' },
   { id: 'desc3', label: 'handmade to order', mass: 15, small: true },
   { id: 'img1', label: 'image', mass: 40, isImage: true, src: '/footglove-big.png' },
 ];
