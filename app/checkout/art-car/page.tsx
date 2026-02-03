@@ -153,9 +153,9 @@ function CheckoutForm() {
             customerName,
             shippingAddress: {
               address: (ev.shippingAddress as any)?.line1 || formData.address,
-              city: ev.shippingAddress?.city || formData.city,
-              state: ev.shippingAddress?.state || formData.state,
-              zip: ev.shippingAddress?.postal_code || formData.zip,
+              city: (ev.shippingAddress as any)?.city || formData.city,
+              state: (ev.shippingAddress as any)?.state || formData.state,
+              zip: (ev.shippingAddress as any)?.postal_code || formData.zip,
             },
           }),
         });

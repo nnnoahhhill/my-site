@@ -74,7 +74,7 @@ function CheckoutForm() {
   const physicsDefs = useMemo(() => {
     const items: PhysicsItemDef[] = ITEMS.map(item => ({
       id: item.id,
-      label: item.label || item.id,
+      label: (item as any).label || item.id,
       mass: item.mass
     }));
     items.push({
@@ -162,9 +162,9 @@ function CheckoutForm() {
             customerName,
             shippingAddress: {
               address: (ev.shippingAddress as any)?.line1 || formData.address,
-              city: ev.shippingAddress?.city || formData.city,
-              state: ev.shippingAddress?.state || formData.state,
-              zip: ev.shippingAddress?.postal_code || formData.zip,
+              city: (ev.shippingAddress as any)?.city || formData.city,
+              state: (ev.shippingAddress as any)?.state || formData.state,
+              zip: (ev.shippingAddress as any)?.postal_code || formData.zip,
             },
           }),
         });
