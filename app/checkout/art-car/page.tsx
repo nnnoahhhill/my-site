@@ -28,6 +28,7 @@ const ITEMS = [
   { id: 'desc1', label: 'delivery to playa', mass: 20 },
   { id: 'desc2', label: '24/7 on-call support at Black Rock City', mass: 25 },
   { id: 'desc3', label: 'delivery after', mass: 20 },
+  { id: 'coupon', mass: 15 },
   { id: 'summary', mass: 25 },
   { id: 'wallet', mass: 25 },
   { id: 'card', mass: 30 },
@@ -49,6 +50,8 @@ function CheckoutForm() {
     state: '',
     zip: '',
   });
+  const [couponCode, setCouponCode] = useState('');
+  const [discount, setDiscount] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [cardComplete, setCardComplete] = useState(false);
   const [paymentRequest, setPaymentRequest] = useState<any>(null);
@@ -56,6 +59,37 @@ function CheckoutForm() {
 
   const borderColor = brightness > 0 ? '#000' : '#fff';
   const textColor = brightness > 0 ? '#000' : '#fff';
+  
+  const total = Math.max(0, BASE_PRICE - discount);
+
+  // Apply coupon code
+  const handleCouponApply = async () => {
+    if (!couponCode.trim()) return;
+    
+    try {
+      const res = await fetch('/api/checkout/apply-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          couponCode: couponCode.trim().toUpperCase(),
+          product: 'art-car',
+          subtotal: BASE_PRICE,
+        }),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || 'Invalid coupon code');
+        return;
+      }
+      
+      const { discount: discountAmount } = await res.json();
+      setDiscount(discountAmount);
+    } catch (error) {
+      console.error('Coupon error:', error);
+      alert('Failed to apply coupon');
+    }
+  };
 
   const isValid = 
     formData.name.length > 0 &&
@@ -100,12 +134,14 @@ function CheckoutForm() {
   useEffect(() => {
     if (!stripe || !elements) return;
 
+    const currentTotal = Math.max(0, BASE_PRICE - discount);
+    
     const pr = stripe.paymentRequest({
       country: 'US',
       currency: 'usd',
       total: {
         label: 'Art Car Commission',
-        amount: BASE_PRICE * 100,
+        amount: currentTotal * 100,
       },
       requestPayerName: true,
       requestPayerEmail: true,
@@ -168,7 +204,7 @@ function CheckoutForm() {
         alert(error.message || 'Payment failed. Please try again.');
       }
     });
-  }, [stripe, elements, formData.email, formData.address, formData.city, formData.state, formData.zip, router]);
+  }, [stripe, elements, discount, formData.email, formData.address, formData.city, formData.state, formData.zip, router]);
 
   const handleSubmit = async () => {
     if (!isValid || processing) return;
@@ -178,7 +214,10 @@ function CheckoutForm() {
       const intentRes = await fetch('/api/checkout/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product: 'art-car' }),
+        body: JSON.stringify({ 
+          product: 'art-car',
+          couponCode: couponCode.trim().toUpperCase() || undefined,
+        }),
       });
 
       if (!intentRes.ok) throw new Error('Failed to create payment intent');
@@ -373,11 +412,43 @@ function CheckoutForm() {
           );
         } else if (item.id === 'desc1' || item.id === 'desc2' || item.id === 'desc3') {
           content = <span style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
+        } else if (item.id === 'coupon') {
+          content = (
+            <div style={{ display: 'flex', gap: '0.5rem', width: 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end' }}>
+              <input
+                type="text"
+                placeholder="Promo Code"
+                style={{...inputStyle, flex: 1}}
+                value={couponCode}
+                onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
+              />
+              <button
+                onClick={handleCouponApply}
+                disabled={!couponCode.trim()}
+                style={{
+                  ...inputStyle,
+                  cursor: couponCode.trim() ? 'pointer' : 'not-allowed',
+                  opacity: couponCode.trim() ? 1 : 0.5,
+                  width: 'auto',
+                  padding: '0.5rem 1rem',
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          );
         } else if (item.id === 'summary') {
           content = (
             <div style={{ width: 'clamp(250px, 70vw, 400px)', fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
-              <div style={{ fontWeight: 'bold' }}>
-                Total: ${BASE_PRICE.toLocaleString()}
+              <div style={{ marginBottom: '0.5rem' }}>Art Car Commission: ${BASE_PRICE.toLocaleString()}</div>
+              {discount > 0 && (
+                <div style={{ marginBottom: '0.5rem', color: '#00aa00' }}>
+                  Discount: -${discount.toLocaleString()}
+                </div>
+              )}
+              <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+                Total: ${total.toLocaleString()}
               </div>
             </div>
           );
@@ -421,7 +492,7 @@ function CheckoutForm() {
                 fontWeight: 'bold',
               }}
             >
-              {processing ? 'Processing...' : `Pay $${BASE_PRICE.toLocaleString()}`}
+              {processing ? 'Processing...' : `Pay $${total.toLocaleString()}`}
             </button>
           );
         }

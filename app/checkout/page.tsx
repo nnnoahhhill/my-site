@@ -26,6 +26,7 @@ const ITEMS = [
   { id: 'state', mass: 15 },
   { id: 'zip', mass: 15 },
   { id: 'shipping', mass: 20 },
+  { id: 'coupon', mass: 15 },
   { id: 'summary', mass: 25 },
   { id: 'wallet', mass: 25 },
   { id: 'card', mass: 30 },
@@ -50,6 +51,8 @@ function CheckoutForm() {
     zip: '',
   });
   const [shippingOption, setShippingOption] = useState<'standard' | 'express' | 'rush'>('standard');
+  const [couponCode, setCouponCode] = useState('');
+  const [discount, setDiscount] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [cardComplete, setCardComplete] = useState(false);
   const [paymentRequest, setPaymentRequest] = useState<any>(null);
@@ -57,8 +60,6 @@ function CheckoutForm() {
 
   const borderColor = brightness > 0 ? '#000' : '#fff'; // Black in light mode, white in dark mode
   const textColor = brightness > 0 ? '#000' : '#fff';
-
-  const total = BASE_PRICE + (shippingOption === 'express' ? EXPRESS_SHIPPING : shippingOption === 'rush' ? RUSH_SHIPPING : 0);
 
   const isValid = 
     formData.name.length > 0 &&
@@ -99,18 +100,52 @@ function CheckoutForm() {
     return colors;
   }, [randomMode, getColorFromHomePalette]);
 
+  const subtotal = BASE_PRICE + (shippingOption === 'express' ? EXPRESS_SHIPPING : shippingOption === 'rush' ? RUSH_SHIPPING : 0);
+  const total = Math.max(0, subtotal - discount);
+
+  // Apply coupon code
+  const handleCouponApply = async () => {
+    if (!couponCode.trim()) return;
+    
+    const currentSubtotal = BASE_PRICE + (shippingOption === 'express' ? EXPRESS_SHIPPING : shippingOption === 'rush' ? RUSH_SHIPPING : 0);
+    
+    try {
+      const res = await fetch('/api/checkout/apply-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          couponCode: couponCode.trim().toUpperCase(),
+          product: 'footglove',
+          subtotal: currentSubtotal,
+        }),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || 'Invalid coupon code');
+        return;
+      }
+      
+      const { discount: discountAmount } = await res.json();
+      setDiscount(discountAmount);
+    } catch (error) {
+      console.error('Coupon error:', error);
+      alert('Failed to apply coupon');
+    }
+  };
+
   // Set up Payment Request (Apple Pay, Google Pay, etc.)
   useEffect(() => {
     if (!stripe || !elements) return;
 
-    const total = BASE_PRICE + (shippingOption === 'express' ? EXPRESS_SHIPPING : shippingOption === 'rush' ? RUSH_SHIPPING : 0);
+    const currentTotal = Math.max(0, subtotal - discount);
 
-    const pr = stripe.paymentRequest({
+      const pr = stripe.paymentRequest({
       country: 'US',
       currency: 'usd',
       total: {
         label: 'Footglove Order',
-        amount: total * 100, // Convert to cents
+        amount: currentTotal * 100, // Convert to cents
       },
       requestPayerName: true,
       requestPayerEmail: true,
@@ -177,7 +212,7 @@ function CheckoutForm() {
         alert(error.message || 'Payment failed. Please try again.');
       }
     });
-  }, [stripe, elements, shippingOption, formData.email, formData.address, formData.city, formData.state, formData.zip, router]);
+  }, [stripe, elements, shippingOption, subtotal, discount, formData.email, formData.address, formData.city, formData.state, formData.zip, router]);
 
   const handleSubmit = async () => {
     if (!isValid || processing) return;
@@ -188,7 +223,10 @@ function CheckoutForm() {
       const intentRes = await fetch('/api/checkout/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shippingOption }),
+        body: JSON.stringify({ 
+          shippingOption,
+          couponCode: couponCode.trim().toUpperCase() || undefined,
+        }),
       });
 
       if (!intentRes.ok) {
@@ -409,6 +447,32 @@ function CheckoutForm() {
               </select>
             </div>
           );
+        } else if (item.id === 'coupon') {
+          content = (
+            <div style={{ display: 'flex', gap: '0.5rem', width: 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end' }}>
+              <input
+                type="text"
+                placeholder="Promo Code"
+                style={{...inputStyle, flex: 1}}
+                value={couponCode}
+                onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
+              />
+              <button
+                onClick={handleCouponApply}
+                disabled={!couponCode.trim()}
+                style={{
+                  ...inputStyle,
+                  cursor: couponCode.trim() ? 'pointer' : 'not-allowed',
+                  opacity: couponCode.trim() ? 1 : 0.5,
+                  width: 'auto',
+                  padding: '0.5rem 1rem',
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          );
         } else if (item.id === 'summary') {
           content = (
             <div style={{ width: 'clamp(250px, 70vw, 400px)', fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
@@ -416,8 +480,13 @@ function CheckoutForm() {
               <div style={{ marginBottom: '0.5rem' }}>
                 Shipping: {shippingOption === 'standard' ? 'Free' : shippingOption === 'express' ? `+$${EXPRESS_SHIPPING}` : `+$${RUSH_SHIPPING}`}
               </div>
+              {discount > 0 && (
+                <div style={{ marginBottom: '0.5rem', color: '#00aa00' }}>
+                  Discount: -${discount.toFixed(2)}
+                </div>
+              )}
               <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
-                Total: ${total}
+                Total: ${total.toFixed(2)}
               </div>
             </div>
           );

@@ -26,13 +26,35 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { shippingOption, product = 'footglove' } = body;
+    const { shippingOption, product = 'footglove', couponCode } = body;
 
     let amount: number;
     let metadata: Record<string, string> = { product };
 
     if (product === 'art-car') {
       amount = ART_CAR_PRICE;
+      
+      // Apply coupon discount if provided
+      if (couponCode) {
+        const COUPONS: Record<string, { discount: number; type: 'percent' | 'fixed' }> = {
+          'SAVE10': { discount: 10, type: 'percent' },
+          'SAVE20': { discount: 20, type: 'percent' },
+          'FREESHIP': { discount: 10, type: 'fixed' },
+          'FRIEND': { discount: 15, type: 'percent' },
+        };
+
+        const coupon = COUPONS[couponCode.toUpperCase()];
+        if (coupon) {
+          let discountAmount: number;
+          if (coupon.type === 'percent') {
+            discountAmount = (amount * coupon.discount) / 100;
+          } else {
+            discountAmount = coupon.discount * 100; // Convert to cents
+          }
+          amount = Math.max(0, amount - discountAmount);
+          metadata.couponCode = couponCode.toUpperCase();
+        }
+      }
     } else {
       // footglove
       if (!['standard', 'express', 'rush'].includes(shippingOption)) {
@@ -45,6 +67,28 @@ export async function POST(req: NextRequest) {
         amount += RUSH_SHIPPING;
       }
       metadata.shippingOption = shippingOption;
+    }
+
+    // Apply coupon discount if provided
+    if (couponCode) {
+      const COUPONS: Record<string, { discount: number; type: 'percent' | 'fixed' }> = {
+        'SAVE10': { discount: 10, type: 'percent' },
+        'SAVE20': { discount: 20, type: 'percent' },
+        'FREESHIP': { discount: 10, type: 'fixed' },
+        'FRIEND': { discount: 15, type: 'percent' },
+      };
+
+      const coupon = COUPONS[couponCode.toUpperCase()];
+      if (coupon) {
+        let discountAmount: number;
+        if (coupon.type === 'percent') {
+          discountAmount = (amount * coupon.discount) / 100;
+        } else {
+          discountAmount = coupon.discount * 100; // Convert to cents
+        }
+        amount = Math.max(0, amount - discountAmount);
+        metadata.couponCode = couponCode.toUpperCase();
+      }
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
