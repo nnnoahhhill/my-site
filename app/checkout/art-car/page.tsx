@@ -103,11 +103,42 @@ function CheckoutForm() {
     elements;
 
   const physicsDefs = useMemo(() => {
-    const items: PhysicsItemDef[] = ITEMS.map(item => ({
-      id: item.id,
-      label: item.label || item.id,
-      mass: item.mass
-    }));
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const mobileXPadding = 16;
+    
+    // Define mobile order: name, email, address, city, state, zip, desc1, desc2, desc3, coupon, summary, wallet, card, pay
+    const mobileOrderMap: Record<string, number> = {
+      'name': 1,
+      'email': 2,
+      'address': 3,
+      'city': 4,
+      'state': 5,
+      'zip': 6,
+      'desc1': 7,
+      'desc2': 8,
+      'desc3': 9,
+      'coupon': 10,
+      'summary': 11,
+      'wallet': 12,
+      'card': 13,
+      'pay': 14,
+    };
+
+    const items: PhysicsItemDef[] = ITEMS.map(item => {
+      const baseDef: PhysicsItemDef = {
+        id: item.id,
+        label: item.label || item.id,
+        mass: item.mass
+      };
+      
+      if (isMobile && mobileOrderMap[item.id] !== undefined) {
+        baseDef.mobileOrder = mobileOrderMap[item.id];
+        baseDef.mobileX = mobileXPadding;
+      }
+      
+      return baseDef;
+    });
+    
     items.push({
       id: 'back-button',
       label: '←',
@@ -287,15 +318,18 @@ function CheckoutForm() {
     }
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  
   const inputStyle = {
     background: 'transparent',
     border: `3px solid ${borderColor}`,
     color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
-    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+    fontSize: isMobile ? '1rem' : 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const,
-    width: 'clamp(200px, 70vw, 300px)',
+    width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)',
+    maxWidth: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)',
   };
 
   const cardElementOptions = {
@@ -345,7 +379,7 @@ function CheckoutForm() {
           background: transparent !important;
           border: 3px solid ${borderColor} !important;
           padding: 0.5rem !important;
-          width: clamp(200px, 70vw, 300px) !important;
+          width: ${isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)'} !important;
           border-radius: 0 !important;
         }
         .StripeElement--focus {
@@ -406,7 +440,7 @@ function CheckoutForm() {
               type="text"
               placeholder="City"
               autoComplete="address-level2"
-              style={{...inputStyle, width: 'clamp(150px, 50vw, 200px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(150px, 50vw, 200px)'}}
               value={formData.city}
               onChange={e => setFormData({...formData, city: e.target.value})}
             />
@@ -417,7 +451,7 @@ function CheckoutForm() {
               type="text"
               placeholder="State"
               autoComplete="address-level1"
-              style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(100px, 30vw, 150px)'}}
               value={formData.state}
               onChange={e => setFormData({...formData, state: e.target.value})}
             />
@@ -428,16 +462,16 @@ function CheckoutForm() {
               type="text"
               placeholder="ZIP"
               autoComplete="postal-code"
-              style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(100px, 30vw, 150px)'}}
               value={formData.zip}
               onChange={e => setFormData({...formData, zip: e.target.value})}
             />
           );
         } else if (item.id === 'desc1' || item.id === 'desc2' || item.id === 'desc3') {
-          content = <span style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
+          content = <span style={{ fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
         } else if (item.id === 'coupon') {
           content = (
-            <div style={{ display: 'flex', gap: '0.5rem', width: 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', width: isMobile ? 'calc(100vw - 32px)' : 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end' }}>
               <input
                 type="text"
                 placeholder="Promo Code"
@@ -463,7 +497,7 @@ function CheckoutForm() {
           );
         } else if (item.id === 'summary') {
           content = (
-            <div style={{ width: 'clamp(250px, 70vw, 400px)', fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(250px, 70vw, 400px)', fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
               <div style={{ marginBottom: '0.5rem' }}>Art Car Commission: ${BASE_PRICE.toLocaleString()}</div>
               {discount > 0 && (
                 <div style={{ marginBottom: '0.5rem', color: '#00aa00' }}>
@@ -480,7 +514,7 @@ function CheckoutForm() {
             return null;
           }
           content = (
-            <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)' }}>
               <PaymentRequestButtonElement
                 options={{
                   paymentRequest,
@@ -497,9 +531,9 @@ function CheckoutForm() {
           );
         } else if (item.id === 'card') {
           content = (
-            <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)' }}>
               {walletAvailable && (
-                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
+                <div style={{ fontSize: isMobile ? '0.9rem' : 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
                   or enter card details:
                 </div>
               )}

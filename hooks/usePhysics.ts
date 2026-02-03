@@ -11,6 +11,9 @@ export type PhysicsItemDef = {
   speedMultiplier?: number; // Multiply initial speed (default 1.0)
   static?: boolean; // If true, body doesn't move but still collides
   centerSpawn?: boolean; // If true, spawn in middle 50% of screen
+  mobileX?: number; // Fixed X position on mobile
+  mobileY?: number; // Fixed Y position on mobile
+  mobileOrder?: number; // Order for stacking on mobile (lower = higher on screen)
 };
 
 export function usePhysics(initialItems: PhysicsItemDef[]) {
@@ -36,23 +39,96 @@ export function usePhysics(initialItems: PhysicsItemDef[]) {
       const containerW = containerRect.width;
       const containerH = isMobile ? window.innerHeight : containerRect.height;
 
+      // On mobile, collect items with mobileOrder for stacking
+      const mobileItems: Array<{ def: PhysicsItemDef; rect: DOMRect }> = [];
+      const regularItems: Array<{ def: PhysicsItemDef; rect: DOMRect }> = [];
+
       initialItems.forEach((def) => {
         const el = itemsRef.current.get(def.id);
         if (!el) return;
+        const rect = el.getBoundingClientRect();
+        
+        // On mobile, if item has mobile positioning, use it; otherwise use regular positioning
+        if (isMobile && (def.mobileX !== undefined || def.mobileY !== undefined || def.mobileOrder !== undefined)) {
+          mobileItems.push({ def, rect });
+        } else {
+          // Regular items (desktop or items without mobile positions)
+          regularItems.push({ def, rect });
+        }
+      });
 
-      const rect = el.getBoundingClientRect();
-      const baseMass = 10;
-      const mass = def.mass ?? (baseMass * (1 + def.label.length * 0.05));
+      // Sort mobile items by order
+      mobileItems.sort((a, b) => (a.def.mobileOrder ?? 999) - (b.def.mobileOrder ?? 999));
 
-      // Rejection sampling to avoid overlaps
-      let x: number, y: number;
-      let attempts = 0;
-      const maxAttempts = 50;
-      
-      if (def.x !== undefined && def.y !== undefined) {
-        x = def.x;
-        y = def.y;
-      } else if (def.static && def.id === 'back-button') {
+      // Process mobile items first to calculate stacked positions
+      let mobileYOffset = 20; // Start 20px from top
+      const mobileXPadding = 16; // 16px padding on sides
+      const mobileItemGap = 12; // 12px gap between items
+
+      mobileItems.forEach(({ def, rect }) => {
+        const baseMass = 10;
+        const mass = def.mass ?? (baseMass * (1 + def.label.length * 0.05));
+
+        let x: number, y: number;
+
+        if (def.mobileX !== undefined) {
+          x = def.mobileX;
+        } else {
+          // Center horizontally with padding
+          x = mobileXPadding;
+        }
+
+        if (def.mobileY !== undefined) {
+          y = def.mobileY;
+        } else if (def.mobileOrder !== undefined) {
+          // Stack based on order
+          y = mobileYOffset;
+          mobileYOffset += rect.height + mobileItemGap;
+        } else {
+          y = mobileYOffset;
+          mobileYOffset += rect.height + mobileItemGap;
+        }
+
+        // Random velocity for mobile items too (so they drift around)
+        let vx = 0;
+        let vy = 0;
+        if (!def.static) {
+          const baseSpeed = 0.2;
+          const speedVariation = 0.2;
+          const speedMultiplier = def.speedMultiplier ?? 1.0;
+          const speed = (baseSpeed + (Math.random() * speedVariation)) * speedMultiplier;
+          const angle = Math.random() * Math.PI * 2;
+          vx = Math.cos(angle) * speed;
+          vy = Math.sin(angle) * speed;
+        }
+
+        newBodies.push({
+          id: def.id,
+          x,
+          y,
+          vx,
+          vy,
+          width: rect.width,
+          height: rect.height,
+          mass: def.static ? Infinity : mass,
+          static: def.static,
+        });
+      });
+
+      // Process regular items (desktop or items without mobile positions)
+      regularItems.forEach(({ def, rect }) => {
+        const baseMass = 10;
+        const mass = def.mass ?? (baseMass * (1 + def.label.length * 0.05));
+
+        // Rejection sampling to avoid overlaps
+        let x: number, y: number;
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        if (def.x !== undefined && def.y !== undefined) {
+          x = def.x;
+          y = def.y;
+        } else if (def.static && def.id === 'back-button') {
         // Special handling for back button: position at bottom left
         x = 12; // 0.75rem
         y = containerH - rect.height - 12; // 0.75rem from bottom

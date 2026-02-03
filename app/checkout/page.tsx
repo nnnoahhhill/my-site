@@ -73,11 +73,40 @@ function CheckoutForm() {
     elements;
 
   const physicsDefs = useMemo(() => {
-    const items: PhysicsItemDef[] = ITEMS.map(item => ({
-      id: item.id,
-      label: (item as any).label || item.id,
-      mass: item.mass
-    }));
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const mobileXPadding = 16;
+    
+    // Define mobile order: name, email, address, city, state, zip, shipping, coupon, summary, wallet, card, pay
+    const mobileOrderMap: Record<string, number> = {
+      'name': 1,
+      'email': 2,
+      'address': 3,
+      'city': 4,
+      'state': 5,
+      'zip': 6,
+      'shipping': 7,
+      'coupon': 8,
+      'summary': 9,
+      'wallet': 10,
+      'card': 11,
+      'pay': 12,
+    };
+
+    const items: PhysicsItemDef[] = ITEMS.map(item => {
+      const baseDef: PhysicsItemDef = {
+        id: item.id,
+        label: (item as any).label || item.id,
+        mass: item.mass
+      };
+      
+      if (isMobile && mobileOrderMap[item.id] !== undefined) {
+        baseDef.mobileOrder = mobileOrderMap[item.id];
+        baseDef.mobileX = mobileXPadding;
+      }
+      
+      return baseDef;
+    });
+    
     items.push({
       id: 'back-button',
       label: '←',
@@ -304,15 +333,18 @@ function CheckoutForm() {
     }
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  
   const inputStyle = {
     background: 'transparent',
     border: `3px solid ${borderColor}`,
     color: textColor,
     padding: '0.5rem',
     fontFamily: 'inherit',
-    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+    fontSize: isMobile ? '1rem' : 'clamp(0.8rem, 2.5vw, 1rem)',
     pointerEvents: 'auto' as const,
-    width: 'clamp(200px, 70vw, 300px)',
+    width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)',
+    maxWidth: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)',
   };
 
   const cardElementOptions = {
@@ -424,7 +456,7 @@ function CheckoutForm() {
               type="text"
               placeholder="City"
               autoComplete="address-level2"
-              style={{...inputStyle, width: 'clamp(150px, 50vw, 200px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(150px, 50vw, 200px)'}}
               value={formData.city}
               onChange={e => setFormData({...formData, city: e.target.value})}
             />
@@ -435,7 +467,7 @@ function CheckoutForm() {
               type="text"
               placeholder="State"
               autoComplete="address-level1"
-              style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(100px, 30vw, 150px)'}}
               value={formData.state}
               onChange={e => setFormData({...formData, state: e.target.value})}
             />
@@ -446,15 +478,15 @@ function CheckoutForm() {
               type="text"
               placeholder="ZIP"
               autoComplete="postal-code"
-              style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(100px, 30vw, 150px)'}}
               value={formData.zip}
               onChange={e => setFormData({...formData, zip: e.target.value})}
             />
           );
         } else if (item.id === 'shipping') {
           content = (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: 'clamp(250px, 70vw, 400px)' }}>
-              <label style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)', color: textColor }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: isMobile ? 'calc(100vw - 32px)' : 'clamp(250px, 70vw, 400px)' }}>
+              <label style={{ fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)', color: textColor }}>
                 Shipping:
               </label>
               <select
@@ -474,7 +506,7 @@ function CheckoutForm() {
           );
         } else if (item.id === 'coupon') {
           content = (
-            <div style={{ display: 'flex', gap: '0.5rem', width: 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', width: isMobile ? 'calc(100vw - 32px)' : 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end' }}>
               <input
                 type="text"
                 placeholder="Promo Code"
@@ -500,7 +532,7 @@ function CheckoutForm() {
           );
         } else if (item.id === 'summary') {
           content = (
-            <div style={{ width: 'clamp(250px, 70vw, 400px)', fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(250px, 70vw, 400px)', fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
               <div style={{ marginBottom: '0.5rem' }}>Footglove: ${BASE_PRICE}</div>
               <div style={{ marginBottom: '0.5rem' }}>
                 Shipping: {shippingOption === 'standard' ? 'Free' : shippingOption === 'express' ? `+$${EXPRESS_SHIPPING}` : `+$${RUSH_SHIPPING}`}
@@ -520,7 +552,7 @@ function CheckoutForm() {
             return null;
           }
           content = (
-            <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)' }}>
               <PaymentRequestButtonElement
                 options={{
                   paymentRequest,
@@ -537,9 +569,9 @@ function CheckoutForm() {
           );
         } else if (item.id === 'card') {
           content = (
-            <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)' }}>
               {walletAvailable && (
-                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
+                <div style={{ fontSize: isMobile ? '0.9rem' : 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
                   or enter card details:
                 </div>
               )}
@@ -561,7 +593,7 @@ function CheckoutForm() {
                 fontWeight: 'bold',
               }}
             >
-              {processing ? 'Processing...' : `Pay $${total}`}
+              {processing ? 'Processing...' : `Pay $${total.toFixed(2)}`}
             </button>
           );
         }
