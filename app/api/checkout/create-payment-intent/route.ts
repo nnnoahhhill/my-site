@@ -50,32 +50,31 @@ export async function POST(req: NextRequest) {
     // Apply coupon discount if provided
     if (couponCode) {
       try {
-        // Look up promotion code in Stripe - try multiple cases
+        // Look up promotion code in Stripe
+        // Promotion codes are case-insensitive per Stripe docs
+        const normalizedCode = couponCode.trim().toUpperCase();
+        
         let promotionCodes = await stripe.promotionCodes.list({
-          code: couponCode.toUpperCase(),
-          limit: 10,
+          code: normalizedCode,
+          limit: 100,
+          active: true,
         });
 
+        // If not found with uppercase, try original case
         if (promotionCodes.data.length === 0) {
           promotionCodes = await stripe.promotionCodes.list({
-            code: couponCode,
-            limit: 10,
+            code: couponCode.trim(),
+            limit: 100,
+            active: true,
           });
         }
 
-        if (promotionCodes.data.length === 0) {
-          promotionCodes = await stripe.promotionCodes.list({
-            code: couponCode.toLowerCase(),
-            limit: 10,
-          });
-        }
-
-        // Find exact match (case-insensitive)
+        // Find exact match (case-insensitive comparison)
         const exactMatch = promotionCodes.data.find(
-          pc => pc.code.toLowerCase() === couponCode.toLowerCase()
+          pc => pc.code.trim().toUpperCase() === normalizedCode
         );
 
-        if (exactMatch) {
+        if (exactMatch && exactMatch.active) {
           const promotionCode = exactMatch;
           const couponId = (promotionCode as any).coupon;
           let coupon;

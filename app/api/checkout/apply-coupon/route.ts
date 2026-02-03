@@ -27,31 +27,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
     }
 
-    // Look up promotion code in Stripe - try both uppercase and original case
+    // Look up promotion code in Stripe
+    // Promotion codes are case-insensitive, so we can search with any case
+    // But we'll try the exact code first, then normalized versions
+    const normalizedCode = couponCode.trim().toUpperCase();
+    
     let promotionCodes = await stripe.promotionCodes.list({
-      code: couponCode.toUpperCase(),
-      limit: 10, // Get more results to check
+      code: normalizedCode,
+      limit: 100, // Get more results to find the exact match
+      active: true, // Only get active promotion codes
     });
 
-    // If not found, try original case
+    // If not found with uppercase, try original case
     if (promotionCodes.data.length === 0) {
       promotionCodes = await stripe.promotionCodes.list({
-        code: couponCode,
-        limit: 10,
+        code: couponCode.trim(),
+        limit: 100,
+        active: true,
       });
     }
 
-    // If still not found, try lowercase
-    if (promotionCodes.data.length === 0) {
-      promotionCodes = await stripe.promotionCodes.list({
-        code: couponCode.toLowerCase(),
-        limit: 10,
-      });
-    }
-
-    // Find exact match (case-insensitive)
+    // Find exact match (case-insensitive comparison)
     const exactMatch = promotionCodes.data.find(
-      pc => pc.code.toLowerCase() === couponCode.toLowerCase()
+      pc => pc.code.trim().toUpperCase() === normalizedCode
     );
 
     if (!exactMatch) {
@@ -59,6 +57,12 @@ export async function POST(req: NextRequest) {
     }
 
     const promotionCode = exactMatch;
+    
+    // Check if promotion code is active
+    if (!promotionCode.active) {
+      return NextResponse.json({ error: 'This promotion code is not active' }, { status: 400 });
+    }
+    
     const couponId = (promotionCode as any).coupon;
     
     if (!couponId) {
