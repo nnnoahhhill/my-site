@@ -77,11 +77,12 @@ export async function POST(req: NextRequest) {
 
         if (exactMatch) {
           const promotionCode = exactMatch;
+          const couponId = (promotionCode as any).coupon;
           let coupon;
-          if (typeof promotionCode.coupon === 'string') {
-            coupon = await stripe.coupons.retrieve(promotionCode.coupon);
+          if (typeof couponId === 'string') {
+            coupon = await stripe.coupons.retrieve(couponId);
           } else {
-            coupon = promotionCode.coupon;
+            coupon = couponId;
           }
 
           // Check if coupon is valid
