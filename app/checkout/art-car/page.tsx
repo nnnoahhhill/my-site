@@ -146,13 +146,24 @@ function CheckoutForm() {
       requestPayerName: true,
       requestPayerEmail: true,
       requestPayerPhone: false,
+      requestShipping: false,
     });
 
     pr.canMakePayment().then((result) => {
       if (result) {
         setPaymentRequest(pr);
         setWalletAvailable(true);
+      } else {
+        setWalletAvailable(false);
       }
+    });
+
+    // Update payment request when total changes
+    pr.update({
+      total: {
+        label: 'Art Car Commission',
+        amount: currentTotal * 100,
+      },
     });
 
     pr.on('paymentmethod', async (ev) => {
@@ -204,7 +215,12 @@ function CheckoutForm() {
         alert(error.message || 'Payment failed. Please try again.');
       }
     });
-  }, [stripe, elements, discount, formData.email, formData.address, formData.city, formData.state, formData.zip, router]);
+
+    return () => {
+      setPaymentRequest(null);
+      setWalletAvailable(false);
+    };
+  }, [stripe, elements, discount, router]);
 
   const handleSubmit = async () => {
     if (!isValid || processing) return;
@@ -298,6 +314,7 @@ function CheckoutForm() {
       },
     },
     hidePostalCode: false,
+    autocomplete: 'cc-number',
   };
 
   return (
@@ -453,6 +470,9 @@ function CheckoutForm() {
             </div>
           );
         } else if (item.id === 'wallet') {
+          if (!walletAvailable || !paymentRequest) {
+            return null;
+          }
           content = (
             <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
               <PaymentRequestButtonElement
@@ -460,8 +480,9 @@ function CheckoutForm() {
                   paymentRequest,
                   style: {
                     paymentRequestButton: {
-                      theme: 'light',
+                      theme: brightness > 0 ? 'light' : 'dark',
                       height: '48px',
+                      type: 'default',
                     },
                   },
                 }}
@@ -471,9 +492,11 @@ function CheckoutForm() {
         } else if (item.id === 'card') {
           content = (
             <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
-              <div style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
-                or enter card details:
-              </div>
+              {walletAvailable && (
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
+                  or enter card details:
+                </div>
+              )}
               <CardElement
                 options={cardElementOptions}
                 onChange={(e) => setCardComplete(e.complete)}

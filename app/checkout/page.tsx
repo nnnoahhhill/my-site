@@ -140,7 +140,7 @@ function CheckoutForm() {
 
     const currentTotal = Math.max(0, subtotal - discount);
 
-      const pr = stripe.paymentRequest({
+    const pr = stripe.paymentRequest({
       country: 'US',
       currency: 'usd',
       total: {
@@ -150,13 +150,25 @@ function CheckoutForm() {
       requestPayerName: true,
       requestPayerEmail: true,
       requestPayerPhone: false,
+      requestShipping: false,
     });
 
+    // Check if payment methods are available
     pr.canMakePayment().then((result) => {
       if (result) {
         setPaymentRequest(pr);
         setWalletAvailable(true);
+      } else {
+        setWalletAvailable(false);
       }
+    });
+
+    // Update payment request when total changes
+    pr.update({
+      total: {
+        label: 'Footglove Order',
+        amount: currentTotal * 100,
+      },
     });
 
     pr.on('paymentmethod', async (ev) => {
@@ -212,7 +224,13 @@ function CheckoutForm() {
         alert(error.message || 'Payment failed. Please try again.');
       }
     });
-  }, [stripe, elements, shippingOption, subtotal, discount, formData.email, formData.address, formData.city, formData.state, formData.zip, router]);
+
+    return () => {
+      // Cleanup
+      setPaymentRequest(null);
+      setWalletAvailable(false);
+    };
+  }, [stripe, elements, shippingOption, subtotal, discount, router]);
 
   const handleSubmit = async () => {
     if (!isValid || processing) return;
@@ -313,6 +331,7 @@ function CheckoutForm() {
       },
     },
     hidePostalCode: false,
+    autocomplete: 'cc-number',
   };
 
   return (
@@ -401,6 +420,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="City"
+              autoComplete="address-level2"
               style={{...inputStyle, width: 'clamp(150px, 50vw, 200px)'}}
               value={formData.city}
               onChange={e => setFormData({...formData, city: e.target.value})}
@@ -411,6 +431,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="State"
+              autoComplete="address-level1"
               style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
               value={formData.state}
               onChange={e => setFormData({...formData, state: e.target.value})}
@@ -421,6 +442,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="ZIP"
+              autoComplete="postal-code"
               style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
               value={formData.zip}
               onChange={e => setFormData({...formData, zip: e.target.value})}
@@ -491,6 +513,9 @@ function CheckoutForm() {
             </div>
           );
         } else if (item.id === 'wallet') {
+          if (!walletAvailable || !paymentRequest) {
+            return null;
+          }
           content = (
             <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
               <PaymentRequestButtonElement
@@ -498,8 +523,9 @@ function CheckoutForm() {
                   paymentRequest,
                   style: {
                     paymentRequestButton: {
-                      theme: 'light',
+                      theme: brightness > 0 ? 'light' : 'dark',
                       height: '48px',
+                      type: 'default',
                     },
                   },
                 }}
@@ -509,9 +535,11 @@ function CheckoutForm() {
         } else if (item.id === 'card') {
           content = (
             <div style={{ width: 'clamp(200px, 70vw, 300px)' }}>
-              <div style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
-                or enter card details:
-              </div>
+              {walletAvailable && (
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
+                  or enter card details:
+                </div>
+              )}
               <CardElement
                 options={cardElementOptions}
                 onChange={(e) => setCardComplete(e.complete)}
