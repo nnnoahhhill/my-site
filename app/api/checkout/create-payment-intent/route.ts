@@ -33,28 +33,6 @@ export async function POST(req: NextRequest) {
 
     if (product === 'art-car') {
       amount = ART_CAR_PRICE;
-      
-      // Apply coupon discount if provided
-      if (couponCode) {
-        const COUPONS: Record<string, { discount: number; type: 'percent' | 'fixed' }> = {
-          'SAVE10': { discount: 10, type: 'percent' },
-          'SAVE20': { discount: 20, type: 'percent' },
-          'FREESHIP': { discount: 10, type: 'fixed' },
-          'FRIEND': { discount: 15, type: 'percent' },
-        };
-
-        const coupon = COUPONS[couponCode.toUpperCase()];
-        if (coupon) {
-          let discountAmount: number;
-          if (coupon.type === 'percent') {
-            discountAmount = (amount * coupon.discount) / 100;
-          } else {
-            discountAmount = coupon.discount * 100; // Convert to cents
-          }
-          amount = Math.max(0, amount - discountAmount);
-          metadata.couponCode = couponCode.toUpperCase();
-        }
-      }
     } else {
       // footglove
       if (!['standard', 'express', 'rush'].includes(shippingOption)) {
@@ -71,23 +49,43 @@ export async function POST(req: NextRequest) {
 
     // Apply coupon discount if provided
     if (couponCode) {
-      const COUPONS: Record<string, { discount: number; type: 'percent' | 'fixed' }> = {
-        'SAVE10': { discount: 10, type: 'percent' },
-        'SAVE20': { discount: 20, type: 'percent' },
-        'FREESHIP': { discount: 10, type: 'fixed' },
-        'FRIEND': { discount: 15, type: 'percent' },
-      };
+      try {
+        // Look up promotion code in Stripe
+        const promotionCodes = await stripe.promotionCodes.list({
+          code: couponCode.toUpperCase(),
+          limit: 1,
+          expand: ['data.coupon'],
+        });
 
-      const coupon = COUPONS[couponCode.toUpperCase()];
-      if (coupon) {
-        let discountAmount: number;
-        if (coupon.type === 'percent') {
-          discountAmount = (amount * coupon.discount) / 100;
-        } else {
-          discountAmount = coupon.discount * 100; // Convert to cents
+        if (promotionCodes.data.length > 0) {
+          const promotionCode = promotionCodes.data[0];
+          const couponId = (promotionCode as any).coupon;
+          const coupon = typeof couponId === 'string'
+            ? await stripe.coupons.retrieve(couponId)
+            : couponId;
+
+          // Check if coupon is valid
+          if (coupon.valid) {
+            // Check redemption limits
+            if (!coupon.max_redemptions || promotionCode.times_redeemed < coupon.max_redemptions) {
+              let discountAmount: number;
+              if (coupon.percent_off) {
+                discountAmount = (amount * coupon.percent_off) / 100;
+              } else if (coupon.amount_off) {
+                discountAmount = coupon.amount_off; // Already in cents
+              } else {
+                discountAmount = 0;
+              }
+              
+              amount = Math.max(0, amount - discountAmount);
+              metadata.couponCode = couponCode.toUpperCase();
+              metadata.promotionCodeId = promotionCode.id;
+            }
+          }
         }
-        amount = Math.max(0, amount - discountAmount);
-        metadata.couponCode = couponCode.toUpperCase();
+      } catch (error) {
+        console.error('Error applying coupon:', error);
+        // Continue without coupon if there's an error
       }
     }
 
