@@ -50,43 +50,59 @@ export async function POST(req: NextRequest) {
     // Apply coupon discount if provided
     if (couponCode) {
       try {
-        // Look up promotion code in Stripe
-        const promotionCodes = await stripe.promotionCodes.list({
+        // Look up promotion code in Stripe - try multiple cases
+        let promotionCodes = await stripe.promotionCodes.list({
           code: couponCode.toUpperCase(),
-          limit: 1,
-          expand: ['data.coupon'],
+          limit: 10,
         });
 
-        if (promotionCodes.data.length > 0) {
-          const promotionCode = promotionCodes.data[0];
-          const couponId = (promotionCode as any).coupon;
-          
-          if (couponId) {
-            const coupon = typeof couponId === 'string'
-              ? await stripe.coupons.retrieve(couponId)
-              : couponId;
+        if (promotionCodes.data.length === 0) {
+          promotionCodes = await stripe.promotionCodes.list({
+            code: couponCode,
+            limit: 10,
+          });
+        }
 
-            // Check if coupon is valid
-            if (coupon && coupon.valid !== false) {
-              // Check redemption limits
-              const timesRedeemed = promotionCode.times_redeemed || 0;
-              if (!coupon.max_redemptions || timesRedeemed < coupon.max_redemptions) {
-                let discountAmount: number;
-                if (coupon.percent_off) {
-                  discountAmount = (amount * coupon.percent_off) / 100;
-                } else if (coupon.amount_off) {
-                  discountAmount = coupon.amount_off; // Already in cents
-                } else {
-                  discountAmount = 0;
-                }
-                
-                amount = Math.max(0, amount - discountAmount);
-                metadata.couponCode = promotionCode.code; // Use the actual code from Stripe
-                metadata.promotionCodeId = promotionCode.id;
+        if (promotionCodes.data.length === 0) {
+          promotionCodes = await stripe.promotionCodes.list({
+            code: couponCode.toLowerCase(),
+            limit: 10,
+          });
+        }
+
+        // Find exact match (case-insensitive)
+        const exactMatch = promotionCodes.data.find(
+          pc => pc.code.toLowerCase() === couponCode.toLowerCase()
+        );
+
+        if (exactMatch) {
+          const promotionCode = exactMatch;
+          let coupon;
+          if (typeof promotionCode.coupon === 'string') {
+            coupon = await stripe.coupons.retrieve(promotionCode.coupon);
+          } else {
+            coupon = promotionCode.coupon;
+          }
+
+          // Check if coupon is valid
+          if (coupon && coupon.valid !== false) {
+            // Check redemption limits
+            const timesRedeemed = promotionCode.times_redeemed || 0;
+            if (!coupon.max_redemptions || timesRedeemed < coupon.max_redemptions) {
+              let discountAmount: number;
+              if (coupon.percent_off) {
+                discountAmount = (amount * coupon.percent_off) / 100;
+              } else if (coupon.amount_off) {
+                discountAmount = coupon.amount_off; // Already in cents
+              } else {
+                discountAmount = 0;
               }
+              
+              amount = Math.max(0, amount - discountAmount);
+              metadata.couponCode = promotionCode.code; // Use the actual code from Stripe
+              metadata.promotionCodeId = promotionCode.id;
             }
           }
-        }
         }
       } catch (error) {
         console.error('Error applying coupon:', error);
