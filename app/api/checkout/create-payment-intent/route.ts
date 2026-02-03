@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
-});
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error('STRIPE_SECRET_KEY is not set');
+}
+
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-12-18.acacia',
+    })
+  : null;
 
 const FOOTGLOVE_BASE_PRICE = 13000; // $130 in cents
 const ART_CAR_PRICE = 2850000; // $28,500 in cents
@@ -12,6 +18,13 @@ const RUSH_SHIPPING = 2500; // $25 in cents
 
 export async function POST(req: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured. Please set STRIPE_SECRET_KEY.' },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json();
     const { shippingOption, product = 'footglove' } = body;
 

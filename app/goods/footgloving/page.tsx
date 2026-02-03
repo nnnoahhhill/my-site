@@ -13,7 +13,7 @@ const ITEMS = [
 ];
 
 export default function FootGlovingPage() {
-  const { randomMode, getColorFromHomePalette } = useTheme();
+  const { randomMode, brightness, getColorFromHomePalette } = useTheme();
 
   const physicsDefs = useMemo(() => {
     const items: PhysicsItemDef[] = ITEMS.map(item => ({
@@ -69,6 +69,8 @@ export default function FootGlovingPage() {
         const isImage = (item as any).isImage;
         const imageSrc = (item as any).src;
         const isSmall = (item as any).small;
+        const href = (item as any).href;
+        const isButton = item.id === 'desc2';
         
         // Make all text segments larger and single line
         const fontSize = isSmall 
@@ -82,13 +84,18 @@ export default function FootGlovingPage() {
             key={item.id}
             id={item.id}
             label={item.label}
-            href={(item as any).href}
+            href={href}
             registerRef={registerRef(item.id)}
             setHovered={setHovered}
             style={{ 
               color: itemColors[item.id],
               fontSize,
-              whiteSpace: 'nowrap' // Force single line
+              whiteSpace: 'nowrap', // Force single line
+              ...(isButton ? {
+                border: '3px solid currentColor',
+                padding: '0.5rem 1rem',
+                backgroundColor: brightness > 0 ? '#ffffff' : '#000000',
+              } : {})
             }}
           >
             {isImage && imageSrc ? (

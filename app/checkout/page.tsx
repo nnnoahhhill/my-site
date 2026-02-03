@@ -191,7 +191,10 @@ function CheckoutForm() {
         body: JSON.stringify({ shippingOption }),
       });
 
-      if (!intentRes.ok) throw new Error('Failed to create payment intent');
+      if (!intentRes.ok) {
+        const errorData = await intentRes.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || 'Failed to create payment intent');
+      }
       const { clientSecret } = await intentRes.json();
 
       // Confirm payment

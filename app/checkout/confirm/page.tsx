@@ -11,7 +11,6 @@ const ITEMS = [
   { id: 'message1', label: 'thanks for your order', mass: 20 },
   { id: 'message2', label: 'check your email for confirmation', mass: 20 },
   { id: 'message3', label: 'we\'ll send tracking when it ships', mass: 20 },
-  { id: 'back', label: 'back to footglove', mass: 15, href: '/goods/footgloving' },
 ];
 
 function ConfirmPageContent() {

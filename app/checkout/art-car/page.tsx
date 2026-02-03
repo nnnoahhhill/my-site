@@ -25,6 +25,9 @@ const ITEMS = [
   { id: 'city', mass: 15 },
   { id: 'state', mass: 15 },
   { id: 'zip', mass: 15 },
+  { id: 'desc1', label: 'delivery to playa', mass: 20 },
+  { id: 'desc2', label: '24/7 on-call support at Black Rock City', mass: 25 },
+  { id: 'desc3', label: 'delivery after', mass: 20 },
   { id: 'summary', mass: 25 },
   { id: 'wallet', mass: 25 },
   { id: 'card', mass: 30 },
@@ -368,14 +371,12 @@ function CheckoutForm() {
               onChange={e => setFormData({...formData, zip: e.target.value})}
             />
           );
+        } else if (item.id === 'desc1' || item.id === 'desc2' || item.id === 'desc3') {
+          content = <span style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
         } else if (item.id === 'summary') {
           content = (
             <div style={{ width: 'clamp(250px, 70vw, 400px)', fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
-              <div style={{ marginBottom: '0.5rem' }}>Art Car Commission: ${BASE_PRICE.toLocaleString()}</div>
-              <div style={{ marginBottom: '0.5rem', fontSize: 'clamp(0.8rem, 2vw, 1rem)', opacity: 0.8 }}>
-                Includes: delivery to playa, 24/7 on-call support at Black Rock City, delivery after
-              </div>
-              <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+              <div style={{ fontWeight: 'bold' }}>
                 Total: ${BASE_PRICE.toLocaleString()}
               </div>
             </div>

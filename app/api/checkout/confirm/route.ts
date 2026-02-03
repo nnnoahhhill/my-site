@@ -2,12 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { sendEmail } from '@/lib/email';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
-});
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error('STRIPE_SECRET_KEY is not set');
+}
+
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-12-18.acacia',
+    })
+  : null;
 
 export async function POST(req: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured. Please set STRIPE_SECRET_KEY.' },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json();
     const { paymentIntentId, customerEmail, customerName, shippingAddress } = body;
 

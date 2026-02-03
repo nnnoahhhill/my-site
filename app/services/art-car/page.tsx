@@ -19,7 +19,7 @@ const ITEMS = [
 ];
 
 export default function ArtCarPage() {
-  const { randomMode, getColorFromHomePalette } = useTheme();
+  const { randomMode, brightness, getColorFromHomePalette } = useTheme();
 
   // Make movement barely noticeable - very slow speed and high mass
   const physicsDefs = useMemo(() => {
@@ -72,20 +72,30 @@ export default function ArtCarPage() {
       >
         ←
       </div>
-      {ITEMS.map(item => (
-        <FloatingItem
-          key={item.id}
-          id={item.id}
-          label={item.label}
-          href={(item as any).href}
-          registerRef={registerRef(item.id)}
-          setHovered={setHovered}
-          style={{ 
-            color: itemColors[item.id],
-            fontSize: '1.2rem' // Smaller text
-          }}
-        />
-      ))}
+      {ITEMS.map(item => {
+        const href = (item as any).href;
+        const isButton = item.id === 'checkout';
+        
+        return (
+          <FloatingItem
+            key={item.id}
+            id={item.id}
+            label={item.label}
+            href={href}
+            registerRef={registerRef(item.id)}
+            setHovered={setHovered}
+            style={{ 
+              color: itemColors[item.id],
+              fontSize: '1.2rem', // Smaller text
+              ...(isButton ? {
+                border: '3px solid currentColor',
+                padding: '0.5rem 1rem',
+                backgroundColor: brightness > 0 ? '#ffffff' : '#000000',
+              } : {})
+            }}
+          />
+        );
+      })}
     </main>
   );
 }
