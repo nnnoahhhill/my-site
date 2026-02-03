@@ -70,6 +70,39 @@ export async function POST(req: NextRequest) {
       // Look up by customer-facing code - Stripe handles case-insensitivity
       // Just use the code as-is, Stripe will match it case-insensitively
       console.log('Looking up promotion code:', trimmedCode);
+      
+      // FIRST: Get ALL promotion codes (no filters) to see what exists
+      const allCodesBeforeFilter = await stripe.promotionCodes.list({
+        limit: 100,
+        expand: ['data.coupon'],
+      });
+      console.log('=== ALL PROMOTION CODES FROM STRIPE (BEFORE FILTER) ===');
+      console.log('Total codes:', allCodesBeforeFilter.data.length);
+      console.log('Full list:', JSON.stringify(allCodesBeforeFilter.data.map(pc => ({
+        id: pc.id,
+        code: pc.code,
+        active: pc.active,
+        times_redeemed: pc.times_redeemed,
+        coupon: typeof (pc as any).coupon === 'string' ? (pc as any).coupon : (pc as any).coupon?.id,
+      })), null, 2));
+      
+      // SECOND: Filter by code (no active filter yet)
+      const codesByCode = await stripe.promotionCodes.list({
+        code: trimmedCode,
+        limit: 100,
+        expand: ['data.coupon'],
+      });
+      console.log('=== PROMOTION CODES FILTERED BY CODE (no active filter) ===');
+      console.log('Codes matching:', trimmedCode, 'Count:', codesByCode.data.length);
+      console.log('Full list:', JSON.stringify(codesByCode.data.map(pc => ({
+        id: pc.id,
+        code: pc.code,
+        active: pc.active,
+        times_redeemed: pc.times_redeemed,
+        coupon: typeof (pc as any).coupon === 'string' ? (pc as any).coupon : (pc as any).coupon?.id,
+      })), null, 2));
+      
+      // THIRD: Filter by code AND active
       const promotionCodes = await stripe.promotionCodes.list({
         code: trimmedCode,
         limit: 100,
@@ -77,9 +110,16 @@ export async function POST(req: NextRequest) {
         expand: ['data.coupon'], // Expand coupon in list results
       });
 
+      console.log('=== PROMOTION CODES FILTERED BY CODE + ACTIVE ===');
       console.log('Found promotion codes:', promotionCodes.data.length);
       if (promotionCodes.data.length > 0) {
-        console.log('Promotion codes found:', promotionCodes.data.map(pc => ({ id: pc.id, code: pc.code, active: pc.active })));
+        console.log('Promotion codes found:', JSON.stringify(promotionCodes.data.map(pc => ({
+          id: pc.id,
+          code: pc.code,
+          active: pc.active,
+          times_redeemed: pc.times_redeemed,
+          coupon: typeof (pc as any).coupon === 'string' ? (pc as any).coupon : (pc as any).coupon?.id,
+        })), null, 2));
       }
 
       if (promotionCodes.data.length === 0) {
@@ -90,9 +130,23 @@ export async function POST(req: NextRequest) {
           active: true,
           expand: ['data.coupon'],
         });
+        console.log('=== ALL ACTIVE PROMOTION CODES (for case-insensitive search) ===');
+        console.log('Total active codes:', allPromoCodes.data.length);
+        console.log('Full list:', JSON.stringify(allPromoCodes.data.map(pc => ({
+          id: pc.id,
+          code: pc.code,
+          active: pc.active,
+          times_redeemed: pc.times_redeemed,
+          coupon: typeof (pc as any).coupon === 'string' ? (pc as any).coupon : (pc as any).coupon?.id,
+        })), null, 2));
         const caseInsensitiveMatch = allPromoCodes.data.find(
           pc => pc.code.toLowerCase() === trimmedCode.toLowerCase()
         );
+        console.log('Case-insensitive match result:', caseInsensitiveMatch ? {
+          id: caseInsensitiveMatch.id,
+          code: caseInsensitiveMatch.code,
+          active: caseInsensitiveMatch.active,
+        } : 'NO MATCH');
         if (caseInsensitiveMatch) {
           console.log('Found case-insensitive match:', caseInsensitiveMatch.id, caseInsensitiveMatch.code);
           promotionCode = caseInsensitiveMatch;
@@ -101,12 +155,25 @@ export async function POST(req: NextRequest) {
           console.log('Trying as coupon ID:', trimmedCode);
           try {
             const coupon = await stripe.coupons.retrieve(trimmedCode);
+            console.log('Coupon found:', { id: coupon.id, valid: coupon.valid });
             // Find a promotion code that uses this coupon
             const promoCodesForCoupon = await stripe.promotionCodes.list({
               limit: 100,
               active: true,
               expand: ['data.coupon'],
             });
+            console.log('=== ALL ACTIVE PROMOTION CODES (searching for coupon match) ===');
+            console.log('Total active codes:', promoCodesForCoupon.data.length);
+            console.log('Full list:', JSON.stringify(promoCodesForCoupon.data.map(pc => {
+              const pcCoupon = (pc as any).coupon;
+              return {
+                id: pc.id,
+                code: pc.code,
+                active: pc.active,
+                coupon_id: typeof pcCoupon === 'string' ? pcCoupon : pcCoupon?.id,
+                matches_target_coupon: (pcCoupon?.id === coupon.id) || (typeof pcCoupon === 'string' && pcCoupon === coupon.id),
+              };
+            }), null, 2));
             const promoWithCoupon = promoCodesForCoupon.data.find(
               pc => {
                 const pcCoupon = (pc as any).coupon;
