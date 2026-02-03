@@ -40,17 +40,26 @@ export async function POST(req: NextRequest) {
 
     const promotionCode = promotionCodes.data[0];
     const couponId = (promotionCode as any).coupon;
+    
+    if (!couponId) {
+      return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
+    }
+    
     const coupon = typeof couponId === 'string' 
       ? await stripe.coupons.retrieve(couponId)
       : couponId;
 
+    if (!coupon) {
+      return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
+    }
+
     // Check if coupon is valid
-    if (!coupon.valid) {
+    if (coupon.valid === false) {
       return NextResponse.json({ error: 'This coupon is no longer valid' }, { status: 400 });
     }
 
     // Check redemption limits
-    if (coupon.max_redemptions && promotionCode.times_redeemed >= coupon.max_redemptions) {
+    if (coupon.max_redemptions && promotionCode.times_redeemed && promotionCode.times_redeemed >= coupon.max_redemptions) {
       return NextResponse.json({ error: 'This coupon has reached its redemption limit' }, { status: 400 });
     }
 

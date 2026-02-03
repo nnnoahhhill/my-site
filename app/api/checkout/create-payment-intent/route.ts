@@ -60,26 +60,30 @@ export async function POST(req: NextRequest) {
         if (promotionCodes.data.length > 0) {
           const promotionCode = promotionCodes.data[0];
           const couponId = (promotionCode as any).coupon;
-          const coupon = typeof couponId === 'string'
-            ? await stripe.coupons.retrieve(couponId)
-            : couponId;
+          
+          if (couponId) {
+            const coupon = typeof couponId === 'string'
+              ? await stripe.coupons.retrieve(couponId)
+              : couponId;
 
-          // Check if coupon is valid
-          if (coupon.valid) {
-            // Check redemption limits
-            if (!coupon.max_redemptions || promotionCode.times_redeemed < coupon.max_redemptions) {
-              let discountAmount: number;
-              if (coupon.percent_off) {
-                discountAmount = (amount * coupon.percent_off) / 100;
-              } else if (coupon.amount_off) {
-                discountAmount = coupon.amount_off; // Already in cents
-              } else {
-                discountAmount = 0;
+            // Check if coupon is valid
+            if (coupon && coupon.valid !== false) {
+              // Check redemption limits
+              const timesRedeemed = (promotionCode as any).times_redeemed || 0;
+              if (!coupon.max_redemptions || timesRedeemed < coupon.max_redemptions) {
+                let discountAmount: number;
+                if (coupon.percent_off) {
+                  discountAmount = (amount * coupon.percent_off) / 100;
+                } else if (coupon.amount_off) {
+                  discountAmount = coupon.amount_off; // Already in cents
+                } else {
+                  discountAmount = 0;
+                }
+                
+                amount = Math.max(0, amount - discountAmount);
+                metadata.couponCode = couponCode.toUpperCase();
+                metadata.promotionCodeId = promotionCode.id;
               }
-              
-              amount = Math.max(0, amount - discountAmount);
-              metadata.couponCode = couponCode.toUpperCase();
-              metadata.promotionCodeId = promotionCode.id;
             }
           }
         }
