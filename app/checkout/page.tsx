@@ -390,6 +390,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="Name"
+              autoComplete="name"
               style={inputStyle}
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
@@ -400,6 +401,7 @@ function CheckoutForm() {
             <input
               type="email"
               placeholder="Email"
+              autoComplete="email"
               style={inputStyle}
               value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
@@ -410,6 +412,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="Street Address"
+              autoComplete="street-address"
               style={inputStyle}
               value={formData.address}
               onChange={e => setFormData({...formData, address: e.target.value})}

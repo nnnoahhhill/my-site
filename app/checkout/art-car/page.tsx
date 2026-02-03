@@ -372,6 +372,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="Name"
+              autoComplete="name"
               style={inputStyle}
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
@@ -382,6 +383,7 @@ function CheckoutForm() {
             <input
               type="email"
               placeholder="Email"
+              autoComplete="email"
               style={inputStyle}
               value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
@@ -392,6 +394,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="Street Address"
+              autoComplete="street-address"
               style={inputStyle}
               value={formData.address}
               onChange={e => setFormData({...formData, address: e.target.value})}
@@ -402,6 +405,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="City"
+              autoComplete="address-level2"
               style={{...inputStyle, width: 'clamp(150px, 50vw, 200px)'}}
               value={formData.city}
               onChange={e => setFormData({...formData, city: e.target.value})}
@@ -412,6 +416,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="State"
+              autoComplete="address-level1"
               style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
               value={formData.state}
               onChange={e => setFormData({...formData, state: e.target.value})}
@@ -422,6 +427,7 @@ function CheckoutForm() {
             <input
               type="text"
               placeholder="ZIP"
+              autoComplete="postal-code"
               style={{...inputStyle, width: 'clamp(100px, 30vw, 150px)'}}
               value={formData.zip}
               onChange={e => setFormData({...formData, zip: e.target.value})}
