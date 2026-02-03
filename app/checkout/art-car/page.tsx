@@ -380,7 +380,8 @@ function CheckoutForm() {
           background: transparent !important;
           border: 3px solid ${borderColor} !important;
           padding: 0.5rem !important;
-          width: ${isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)'} !important;
+          width: ${isMobile ? 'calc(100vw - 48px)' : 'clamp(200px, 70vw, 300px)'} !important;
+          box-sizing: border-box !important;
           border-radius: 0 !important;
         }
         .StripeElement--focus {
@@ -441,7 +442,7 @@ function CheckoutForm() {
               type="text"
               placeholder="City"
               autoComplete="address-level2"
-              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(150px, 50vw, 200px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 48px)' : 'clamp(150px, 50vw, 200px)'}}
               value={formData.city}
               onChange={e => setFormData({...formData, city: e.target.value})}
             />
@@ -452,7 +453,7 @@ function CheckoutForm() {
               type="text"
               placeholder="State"
               autoComplete="address-level1"
-              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(100px, 30vw, 150px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 48px)' : 'clamp(100px, 30vw, 150px)'}}
               value={formData.state}
               onChange={e => setFormData({...formData, state: e.target.value})}
             />
@@ -463,7 +464,7 @@ function CheckoutForm() {
               type="text"
               placeholder="ZIP"
               autoComplete="postal-code"
-              style={{...inputStyle, width: isMobile ? 'calc(100vw - 32px)' : 'clamp(100px, 30vw, 150px)'}}
+              style={{...inputStyle, width: isMobile ? 'calc(100vw - 48px)' : 'clamp(100px, 30vw, 150px)'}}
               value={formData.zip}
               onChange={e => setFormData({...formData, zip: e.target.value})}
             />
@@ -472,7 +473,7 @@ function CheckoutForm() {
           content = <span style={{ fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>{item.label}</span>;
         } else if (item.id === 'coupon') {
           content = (
-            <div style={{ display: 'flex', gap: '0.5rem', width: isMobile ? 'calc(100vw - 32px)' : 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', width: isMobile ? 'calc(100vw - 48px)' : 'clamp(250px, 70vw, 400px)', alignItems: 'flex-end', boxSizing: 'border-box' }}>
               <input
                 type="text"
                 placeholder="Promo Code"
@@ -498,7 +499,7 @@ function CheckoutForm() {
           );
         } else if (item.id === 'summary') {
           content = (
-            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(250px, 70vw, 400px)', fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 48px)' : 'clamp(250px, 70vw, 400px)', fontSize: isMobile ? '0.9rem' : 'clamp(0.9rem, 2.5vw, 1.2rem)', boxSizing: 'border-box' }}>
               <div style={{ marginBottom: '0.5rem' }}>Art Car Commission: ${BASE_PRICE.toLocaleString()}</div>
               {discount > 0 && (
                 <div style={{ marginBottom: '0.5rem', color: '#00aa00' }}>
@@ -515,7 +516,7 @@ function CheckoutForm() {
             return null;
           }
           content = (
-            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 48px)' : 'clamp(200px, 70vw, 300px)', boxSizing: 'border-box' }}>
               <PaymentRequestButtonElement
                 options={{
                   paymentRequest,
@@ -532,9 +533,9 @@ function CheckoutForm() {
           );
         } else if (item.id === 'card') {
           content = (
-            <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 'clamp(200px, 70vw, 300px)' }}>
+            <div style={{ width: isMobile ? 'calc(100vw - 48px)' : 'clamp(200px, 70vw, 300px)', boxSizing: 'border-box' }}>
               {walletAvailable && (
-                <div style={{ fontSize: isMobile ? '0.9rem' : 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
+                <div style={{ fontSize: isMobile ? '0.85rem' : 'clamp(0.8rem, 2vw, 1rem)', marginBottom: '0.5rem', color: textColor }}>
                   or enter card details:
                 </div>
               )}
