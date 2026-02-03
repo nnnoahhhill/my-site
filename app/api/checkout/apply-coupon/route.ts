@@ -53,11 +53,17 @@ export async function POST(req: NextRequest) {
     // If it looks like a promotion code ID (starts with promo_), retrieve by ID
     if (trimmedCode.startsWith('promo_')) {
       try {
-        promotionCode = await stripe.promotionCodes.retrieve(trimmedCode);
+        // Expand coupon when retrieving by ID
+        promotionCode = await stripe.promotionCodes.retrieve(trimmedCode, {
+          expand: ['coupon'],
+        });
+        console.log('Retrieved promotion code by ID:', promotionCode.id, promotionCode.code, 'active:', promotionCode.active);
         if (!promotionCode.active) {
+          console.error('Promotion code not active:', promotionCode.id);
           return NextResponse.json({ error: 'This promotion code is not active' }, { status: 400 });
         }
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Error retrieving promotion code by ID:', error.message);
         return NextResponse.json({ error: 'Invalid promotion code ID' }, { status: 400 });
       }
     } else {
