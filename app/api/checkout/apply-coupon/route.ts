@@ -205,16 +205,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'This promotion code is not active' }, { status: 400 });
     }
     
-    // Get coupon - it might be expanded already, nested in promotion.promotion.coupon, or just an ID
+    // Get coupon - it might be expanded already, nested in promotion.coupon, or just an ID
     let coupon;
     let couponId = (promotionCode as any).coupon;
     
-    // Check if coupon is nested in promotion.promotion.coupon (newer Stripe API structure)
+    // Check if coupon is nested in promotion.coupon (newer Stripe API structure)
     if (!couponId && (promotionCode as any).promotion) {
       const promotion = (promotionCode as any).promotion;
       if (promotion.coupon) {
         couponId = promotion.coupon;
-        console.log('Found coupon ID in promotion.promotion.coupon:', couponId);
+        console.log('Found coupon ID in promotion.coupon:', couponId);
       }
     }
     
@@ -223,6 +223,8 @@ export async function POST(req: NextRequest) {
       console.error('Promotion code object:', JSON.stringify(promotionCode, null, 2));
       return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
     }
+    
+    console.log('Resolved coupon ID:', couponId, 'type:', typeof couponId);
     
     console.log('Coupon ID type:', typeof couponId, 'value:', couponId);
     
