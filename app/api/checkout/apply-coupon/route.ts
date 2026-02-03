@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Look up promotion code in Stripe
-    // Support both customer-facing codes and promotion code IDs (promo_xxx)
+    // Promotion codes are case-insensitive per Stripe docs
     const trimmedCode = couponCode.trim();
     let promotionCode;
     
@@ -43,34 +43,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid promotion code ID' }, { status: 400 });
       }
     } else {
-      // Look up by customer-facing code (case-insensitive)
-      const normalizedCode = trimmedCode.toUpperCase();
-      
-      let promotionCodes = await stripe.promotionCodes.list({
-        code: normalizedCode,
+      // Look up by customer-facing code - Stripe handles case-insensitivity
+      // Just use the code as-is, Stripe will match it case-insensitively
+      const promotionCodes = await stripe.promotionCodes.list({
+        code: trimmedCode,
         limit: 100,
         active: true,
       });
 
-      // If not found with uppercase, try original case
       if (promotionCodes.data.length === 0) {
-        promotionCodes = await stripe.promotionCodes.list({
-          code: trimmedCode,
-          limit: 100,
-          active: true,
-        });
-      }
-
-      // Find exact match (case-insensitive comparison)
-      const exactMatch = promotionCodes.data.find(
-        pc => pc.code.trim().toUpperCase() === normalizedCode
-      );
-
-      if (!exactMatch) {
         return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
       }
 
-      promotionCode = exactMatch;
+      // Get the first match (should be exact since Stripe handles case-insensitivity)
+      promotionCode = promotionCodes.data[0];
     }
     
     // Check if promotion code is active
