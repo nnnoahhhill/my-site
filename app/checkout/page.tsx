@@ -612,10 +612,12 @@ function CheckoutForm() {
             {content}
           </FloatingItem>
         );
-      })}
-    </main>
-  );
-}
+          })}
+        </>
+      )}
+        </main>
+      );
+    }
 
 export default function CheckoutPage() {
   if (!stripePromise) {

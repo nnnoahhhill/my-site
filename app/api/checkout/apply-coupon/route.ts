@@ -20,11 +20,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    
     const { couponCode, product, subtotal } = body;
 
-    if (!couponCode) {
+    if (!couponCode || typeof couponCode !== 'string') {
       return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
+    }
+    
+    if (typeof subtotal !== 'number' || subtotal < 0) {
+      return NextResponse.json({ error: 'Invalid subtotal' }, { status: 400 });
     }
 
     // Look up promotion code in Stripe
