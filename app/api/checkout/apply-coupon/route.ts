@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
     
-    const { couponCode, product, subtotal } = body;
+    const { couponCode, subtotal } = body;
 
-    console.log('Apply coupon request:', { couponCode, product, subtotal });
+    console.log('Apply coupon request:', { couponCode, subtotal });
 
     if (!couponCode || typeof couponCode !== 'string') {
       console.error('Invalid couponCode:', couponCode);

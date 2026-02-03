@@ -71,8 +71,7 @@ function CheckoutForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          couponCode: couponCode.trim().toUpperCase(),
-          product: 'art-car',
+          couponCode: couponCode.trim(),
           subtotal: BASE_PRICE,
         }),
       });

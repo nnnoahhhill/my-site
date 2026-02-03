@@ -143,8 +143,7 @@ function CheckoutForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          couponCode: couponCode.trim().toUpperCase(),
-          product: 'footglove',
+          couponCode: couponCode.trim(),
           subtotal: currentSubtotal,
         }),
       });
