@@ -48,9 +48,10 @@ export function ThemeProvider({ children, initialPunished = false }: { children:
   const [brightness, setBrightness] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme-brightness');
-      return saved ? parseInt(saved, 10) : 0;
+      // Default to -5 (dark mode) if no preference is set
+      return saved ? parseInt(saved, 10) : -5;
     }
-    return 0;
+    return -5; // Default to dark mode
   });
   const [randomMode, setRandomMode] = useState(() => {
     if (typeof window !== 'undefined') {
