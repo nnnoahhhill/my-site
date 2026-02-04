@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const previewImage = `${baseUrl}/footglove_favicon/footgloves-preview.png`;
   
   return {
-    title: "buy them",
+    title: "checkout",
     icons: {
       icon: [
         { url: '/footglove_favicon/favicon.ico', sizes: 'any' },
@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     openGraph: {
-      title: "buy them",
+      title: "checkout",
       images: [previewImage],
     },
     twitter: {
@@ -34,6 +34,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function FootGlovingLayout({ children }: { children: React.ReactNode }) {
+export default function CheckoutLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
