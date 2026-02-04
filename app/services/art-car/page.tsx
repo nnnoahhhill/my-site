@@ -91,6 +91,7 @@ export default function ArtCarPage() {
                 border: '3px solid currentColor',
                 padding: '0.5rem 1rem',
                 backgroundColor: brightness > 0 ? '#ffffff' : '#000000',
+                color: brightness > 0 ? '#000000' : '#ffffff', // High contrast: black on white, white on black
               } : {})
             }}
           />

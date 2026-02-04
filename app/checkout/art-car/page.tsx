@@ -480,14 +480,14 @@ function CheckoutForm() {
           </div>
           
           {/* Summary */}
-          <div style={{ fontSize: '0.9rem', padding: '12px', border: `2px solid ${borderColor}` }}>
+          <div style={{ fontSize: '0.9rem', padding: '12px', border: `3px solid ${borderColor}`, color: textColor }}>
             <div style={{ marginBottom: '0.5rem' }}>Art Car Commission: ${BASE_PRICE.toLocaleString()}</div>
             {discount > 0 && (
               <div style={{ marginBottom: '0.5rem', color: '#00aa00' }}>
                 Discount: -${discount.toLocaleString()}
               </div>
             )}
-            <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+            <div style={{ fontWeight: 'bold', borderTop: `3px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
               Total: ${total.toLocaleString()}
             </div>
           </div>

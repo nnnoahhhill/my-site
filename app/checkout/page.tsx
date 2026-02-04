@@ -490,7 +490,7 @@ function CheckoutForm() {
           </div>
           
           {/* Summary */}
-          <div style={{ fontSize: '0.9rem', padding: '12px', border: `2px solid ${borderColor}` }}>
+          <div style={{ fontSize: '0.9rem', padding: '12px', border: `3px solid ${borderColor}`, color: textColor }}>
             <div style={{ marginBottom: '0.5rem' }}>Footglove: ${BASE_PRICE}</div>
             <div style={{ marginBottom: '0.5rem' }}>
               Shipping: {shippingOption === 'standard' ? 'Free' : shippingOption === 'express' ? `+$${EXPRESS_SHIPPING}` : `+$${RUSH_SHIPPING}`}
@@ -500,7 +500,7 @@ function CheckoutForm() {
                 Discount: -${discount.toFixed(2)}
               </div>
             )}
-            <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+            <div style={{ fontWeight: 'bold', borderTop: `3px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
               Total: ${total.toFixed(2)}
             </div>
           </div>
