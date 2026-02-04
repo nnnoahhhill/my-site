@@ -97,10 +97,10 @@ export default function MusicPage() {
               style={{ 
                 borderRadius: '12px', 
                 border: 'none',
-                width: 'clamp(250px, 70vw, 440px)',
+                width: 'clamp(320px, 90vw, 440px)',
                 height: 'clamp(141px, 20vw, 141px)',
                 maxWidth: '100%',
-                minWidth: '250px'
+                minWidth: '320px'
               }}
               src={(item as any).url}
               width="440"
