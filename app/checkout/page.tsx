@@ -734,7 +734,7 @@ function CheckoutForm() {
                   Discount: -${discount.toFixed(2)}
                 </div>
               )}
-              <div style={{ fontWeight: 'bold', borderTop: `2px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+              <div style={{ fontWeight: 'bold', borderTop: `3px solid ${borderColor}`, paddingTop: '0.5rem', marginTop: '0.5rem' }}>
                 Total: ${total.toFixed(2)}
               </div>
             </div>
