@@ -1,9 +1,11 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTheme } from '@/components/ThemeProvider';
 
 export function MoodPopup() {
   const pathname = usePathname();
+  const { brightness } = useTheme();
   const [show, setShow] = useState(false);
   const [stage, setStage] = useState<'select' | 'input' | 'done'>('select');
   const [obscureText, setObscureText] = useState('');
@@ -11,6 +13,12 @@ export function MoodPopup() {
   const activeTimeRef = useRef(0);
   const lastCheckRef = useRef(Date.now());
   const intervalRef = useRef<NodeJS.Timeout>();
+  
+  // Calculate theme colors based on brightness
+  const isDark = brightness < 0;
+  const bgColor = isDark ? '#000000' : '#ffffff';
+  const textColor = isDark ? '#ffffff' : '#000000';
+  const borderColor = isDark ? '#ffffff' : '#000000';
 
   useEffect(() => {
     // Only show on homepage
@@ -128,8 +136,9 @@ export function MoodPopup() {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        background: 'var(--bg-color)',
-        border: '2px solid currentColor',
+        background: bgColor,
+        color: textColor,
+        border: `3px solid ${borderColor}`,
         padding: 'clamp(1.5rem, 4vw, 3rem)',
         zIndex: 9999,
         width: '600px',
@@ -177,7 +186,14 @@ export function MoodPopup() {
               onChange={e => setObscureText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmitObscure()}
               autoFocus
-              style={{ width: '100%', padding: '1rem', background: 'transparent', border: '2px solid currentColor', color: 'inherit', fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)' }}
+              style={{ 
+                width: '100%', 
+                padding: '1rem', 
+                background: 'transparent', 
+                border: `3px solid ${borderColor}`, 
+                color: textColor, 
+                fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)'
+              }}
             />
           </>
         )}

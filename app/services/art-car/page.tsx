@@ -86,7 +86,9 @@ export default function ArtCarPage() {
             setHovered={setHovered}
             style={{ 
               color: itemColors[item.id],
-              fontSize: '1.2rem', // Smaller text
+              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', // Wider text, fewer line breaks
+              maxWidth: 'clamp(400px, 80vw, 800px)', // Wider max width
+              whiteSpace: 'normal', // Allow wrapping but with wider lines
               ...(isButton ? {
                 border: '3px solid currentColor',
                 padding: '0.5rem 1rem',

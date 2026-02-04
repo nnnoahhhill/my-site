@@ -57,8 +57,8 @@ export function BackButton({ registerRef }: { registerRef?: (el: HTMLButtonEleme
     };
   }, [registerRef]);
 
-  // Don't show on home page (desktop or mobile)
-  if (!pathname || pathname === '/' || pathname === '') {
+  // Don't show on home page or checkout pages (they have their own back buttons)
+  if (!pathname || pathname === '/' || pathname === '' || pathname.startsWith('/checkout')) {
     return null;
   }
   
